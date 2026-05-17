@@ -1,0 +1,36 @@
+# tracing.run — Docker deployment.
+#
+# Setup:  ./setup.sh         # interactive wizard, writes .env
+# Start:  docker compose up -d
+# Logs:   docker compose logs -f
+# Stop:   docker compose down       (data persists in ./data/)
+#
+# For multiple users on one machine: clone the repo into separate directories,
+# run setup.sh in each, give each a different DISPLAY_NAME and HOST_PORT.
+
+services:
+  app:
+    build: .
+    # ${VAR:-default} = use default if VAR is unset/empty.
+    image: tracing-run:${LATEST_TAG:-latest}
+    container_name: tracing-run-${DISPLAY_NAME:-runner}
+    ports:
+      - "${HOST_PORT:-8507}:8507"
+    volumes:
+      # Each instance gets its own subdirectory under ./data/
+      - ./data/${DISPLAY_NAME:-runner}:/data
+    environment:
+      DATA_DIR:      /data
+      TZ:            ${TZ:-Australia/Melbourne}
+      LLM_BASE:      ${LLM_BASE:-http://host.docker.internal:4000/v1}
+      LLM_API_KEY:   ${LLM_API_KEY:-local-proxy}
+      DISPLAY_NAME:  ${DISPLAY_NAME:-Runner}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gpt-5.4}
+      # ${VAR:?msg} = compose REFUSES to start if VAR is unset/empty.
+      # No-auth would expose the instance to anyone with the URL — intolerable
+      # under a Cloudflare tunnel or any public route.
+      APP_PASSWORD:  ${LOGIN_PASSWORD:?LOGIN_PASSWORD is required — run ./setup.sh}
+    extra_hosts:
+      # Lets the container reach the host's LiteLLM at host.docker.internal
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

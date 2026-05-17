@@ -1,0 +1,28 @@
+# Don't ship local environment artifacts into the image
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Personal data — never bake into the image. Mount at runtime via /data.
+cache/
+.garth_session/
+user_config.json
+
+# Git metadata isn't needed inside the runtime image
+.git/
+.gitignore
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+
+# Docker / docs (not needed inside container)
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+data/

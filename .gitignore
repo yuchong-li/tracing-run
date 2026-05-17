@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.garth_session/
+cache/
+user_config.json
+*.log
+login_debug.png
+*.egg-info/
+.DS_Store
+.sesskey
+
+# Docker volumes (per-instance personal data)
+data/

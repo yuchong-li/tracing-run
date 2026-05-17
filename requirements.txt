@@ -1,0 +1,6 @@
+python-fasthtml==0.14.1
+requests
+garth==0.7.11
+garminconnect>=0.3.3,<0.4
+playwright==1.59.0
+plotly
