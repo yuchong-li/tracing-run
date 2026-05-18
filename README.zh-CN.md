@@ -13,17 +13,17 @@
 [English](README.md) | **中文**
 
 > 一款 AI-native、手机优先的训练分析工具, 给认真训练的跑者。
-> 从 Garmin Connect 同步, 中英文双语对话, 跑在你自己的 LLM key 上。
+> 从 Garmin Connect 同步, 中英文双语对话, 跑在你自己的 LLM 上。
 
 *Built by serious runners. We use this every day.*
 
 ## 为什么写这个
 
-我跑步, 我戴 Garmin。多年来打开 Garmin Connect, 看着满屏密密麻麻的数字, 我心里反复就一个问题: *"数据当然有用 —— 可我训练里到底要改什么?"*
+我跑步, 我戴 Garmin。多年来打开 Garmin Connect, 看着满屏密密麻麻的数字和图表, 我心里就一个问题: *"数据当然有用 —— 可我训练里到底要改什么?"*
 
-[Intervals.icu](https://intervals.icu) 是我见过最专业的训练分析工具, 但它只有英文、桌面优先, 也诞生在 LLM 之前。[Strava](https://www.strava.com) 更像跑者的朋友圈, 用来分享, 不是用来做数据分析。[Sigma](https://sigma.run) 视觉精致, 面向的却是打卡型休闲跑者。国内的咕咚 / Keep / 悦跑圈, 服务的也是这同一群轻度用户。
+[Intervals.icu](https://intervals.icu) 是我见过最专业的训练分析工具, 但它只有英文、桌面优先, 也诞生在 LLM 之前。[Strava](https://www.strava.com) 更像跑者的朋友圈, 用来分享, 不是用来做数据分析。[Sigma](https://sigma.run) 视觉精致, 面向的却是打卡型休闲跑者。咕咚 / Keep / 悦跑圈, 服务的也是这同一群轻度用户。
 
-中间留着一片真空: **认真训练的中文跑者** —— 有目标、用 Garmin / Coros / Apple Watch, 想在口袋里随时拿到深度分析, 以对话形式, 而不是桌面 dashboard。
+中间留着一片真空: **认真训练的中文跑者** —— 有目标、用 Garmin / Coros / Suunto, 想在口袋里随时拿到深度分析, 以对话形式, 而不是桌面 dashboard。
 
 所以我自己写了一个。先给自己用。现在拿出来分享, 因为其他认真训练的中文跑者大概也想要同样的东西 —— 没人会替我们做。
 
@@ -32,23 +32,23 @@
 **适合你, 如果你**:
 
 - 训练有明确目标 —— 冲 PB / 备赛 / 突破瓶颈
-- 用 Garmin (Coros / Apple Watch / Strava 集成在 wishlist 上)
+- 用 Garmin (Strava / Suunto / Coros 集成在 wishlist 上)
 - 熟悉 Pa:HR、cardiac drift、ACWR 这类词, 或者愿意去学
 - 想要的是深度与诚实, 而不是 gamification
 
 **不是给你的, 如果你**:
 
 - 想要社交 feed 或排行榜 → Strava 更合适
-- 跑步新手, 需要的是鼓励 → Sigma / Keep / 咕咚 更合适
+- 跑步新手, 需要的是鼓励 → Runna / Keep / 咕咚 更合适
 - 想要桌面多图表 dashboard → [Intervals.icu](https://intervals.icu) 更合适
-- 想要全自动训练计划生成器 → 不在范围内
+- 想要全自动训练计划生成器 → maybe Runna + Strava
 
 ## 设计原则
 
-- **AI-native, 不是 AI 后贴。** 主交互就是对话。图表和表格服务于对话, 不是反过来。
+- **AI-native, 不是 AI afterthought。** 整个软件的分析逻辑都是围绕AI打造的。
 - **手机优先。** 为"刚跑完, 现在怎么办"那一刻而设计, 不是给你 30 分钟坐在笔记本前慢慢拆。
 - **你的数据, 你的 LLM, 你的部署。** Prompt 是 `prompts/` 下的纯 markdown。数据在你本地的 SQLite。LLM endpoint 你自己选 (OpenAI / Claude / Kimi / Grok / Ollama 都行)。
-- **中英文一开始就是平级。** 不是谁翻译谁。
+- **多语言平级。** 不是谁翻译谁。
 - **你比手表更懂这次跑。** 你写的 tag 和备注是 ground truth, 手表的自动分类只是一个提示。
 
 ## 不做什么
@@ -241,7 +241,7 @@ LLM 侧同样 locale-aware: 每个 typed-builder 报告在 `prompts/en/` 与 `pr
 | LiteLLM proxy  | `http://host.docker.internal:4000/v1`  | 一个 key 路由 Claude / Kimi / Grok 等多家  |
 | Ollama (本地)  | `http://host.docker.internal:11434/v1` | 免费, 模型本地跑, key 随便填一个字符串即可 |
 
-`setup.sh` 会提示输入 base URL 与 key。
+`setup.sh` 会提示输入 base URL 与 key，同时会设置一个登录密码并问你的名字。
 
 ```bash
 git clone https://github.com/yuchong-li/tracing-run.git

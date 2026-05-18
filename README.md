@@ -13,17 +13,17 @@
 **English** | [中文](README.zh-CN.md)
 
 > An AI-native, mobile-first training analysis tool for serious runners.
-> Syncs from Garmin Connect, talks to you in English or 中文, runs on your own LLM key.
+> Syncs from Garmin Connect, talks to you in English or 中文, runs on your own LLM.
 
 *Built by serious runners. We use this every day.*
 
 ## Why I built this
 
-I run, I use a Garmin watch, and I've spent years staring at Garmin Connect's wall of numbers thinking *"this is useful data — but what do I actually change in my training?"*
+I run, I use a Garmin watch, and I've spent years staring at Garmin Connect's wall of numbers and charts thinking *"this is useful data — but what do I actually change in my training?"*
 
-[Intervals.icu](https://intervals.icu) is the best serious training analysis tool I know — but it's English-only, desktop-first, and pre-LLM. [Strava](https://www.strava.com) is a social feed — built for sharing runs with friends, not for digging into the data. [Sigma](https://sigma.run) is beautifully designed but optimised for casual check-in style runners. The local Chinese apps (咕咚 / Keep / 悦跑圈) are aimed at the same casual crowd.
+[Intervals.icu](https://intervals.icu) is the best serious training analysis tool I know — but it's English-only, desktop-first, and pre-LLM. [Strava](https://www.strava.com) is a social feed — built for sharing runs with friends, not for digging into the data. [Sigma](https://sigma.run) is beautifully designed but optimised for casual check-in style runners. The Chinese mass-market apps (咕咚 / Keep / 悦跑圈) are aimed at the same casual crowd.
 
-There's a gap: **serious Chinese-speaking runners** who train with intent, use Garmin / Coros / Apple Watch, and want depth in their pocket — in conversation form, not on a desktop dashboard.
+There's a gap: **serious Chinese-speaking runners** who train with intent, use Garmin / Coros / Suunto, and want depth in their pocket — in conversation form, not on a desktop dashboard.
 
 So I built one. For myself first. Sharing it now, because I think other serious Chinese-speaking runners want the same thing — and nobody else is going to build it.
 
@@ -32,23 +32,23 @@ So I built one. For myself first. Sharing it now, because I think other serious 
 **This is for you if:**
 
 - You train with intent — chasing a PB, building toward a race, breaking through a plateau
-- You use Garmin (Coros / Apple Watch / Strava integrations are on the wishlist)
+- You use Garmin (Strava / Suunto / Coros integrations are on the wishlist)
 - You're comfortable with terms like Pa:HR, cardiac drift, ACWR — or curious enough to learn
 - You want depth and honesty, not gamification
 
 **This isn't for you if:**
 
 - You want a social feed or running leaderboards → Strava is better
-- You're new to running and want encouragement → Sigma / Keep / 咕咚 are better
+- You're new to running and want encouragement → Runna / Keep / 咕咚 are better
 - You want a desktop multi-chart dashboard → [Intervals.icu](https://intervals.icu) is better
-- You want a fully-automated training plan generator → out of scope
+- You want a fully-automated training plan generator → maybe Runna + Strava
 
 ## Design principles
 
-- **AI-native, not AI-bolted-on.** The main interface is a conversation. Charts and tables exist to support the conversation, not the other way round.
+- **AI-native, not an AI afterthought.** The entire analysis pipeline is built around AI from day one.
 - **Mobile-first.** Designed for "I just finished a run, what now?" moments — not for thirty-minute laptop deep-dives.
 - **Your data, your LLM, your deployment.** Prompts live in `prompts/` as plain markdown. Data lives in your local SQLite. The LLM endpoint is yours to pick (OpenAI, Claude, Kimi, Grok, Ollama, …).
-- **Bilingual from day one.** English and 中文 as peers, not translations.
+- **Multi-language peers.** Not translations of each other.
 - **You know more about the run than the watch does.** Your tags and comments are ground truth; the watch's auto-classification is a hint.
 
 ## What I'm not building
@@ -241,7 +241,7 @@ The LLM side is locale-aware too: every typed-builder report has parallel prompt
 | LiteLLM proxy  | `http://host.docker.internal:4000/v1`  | route Claude / Kimi / Grok / etc. via one key   |
 | Ollama (local) | `http://host.docker.internal:11434/v1` | free, runs models locally, any key string works |
 
-`setup.sh` asks for the base URL + key.
+`setup.sh` asks for the base URL + key, plus a login password and your display name.
 
 ```bash
 git clone https://github.com/yuchong-li/tracing-run.git
