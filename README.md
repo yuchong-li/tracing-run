@@ -50,6 +50,7 @@ So I built one. For myself first. Sharing it now, because I think other serious 
 - **Your data, your LLM, your deployment.** Prompts live in `prompts/` as plain markdown. Data lives in your local SQLite. The LLM endpoint is yours to pick (OpenAI, Claude, Kimi, Grok, Ollama, …).
 - **Multi-language peers.** Not translations of each other.
 - **You know more about the run than the watch does.** Your tags and comments are ground truth; the watch's auto-classification is a hint.
+- **Always on, with your full history loaded.** Ask at 06:00 before tomorrow's run or 22:00 after today's. It already knows the last 90 days of your training and answers from your own data — no recap needed.
 
 ## What I'm not building
 
