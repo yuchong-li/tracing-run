@@ -6,6 +6,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
 [![Built with FastHTML](https://img.shields.io/badge/built%20with-FastHTML-7c3aed.svg)](https://fastht.ml)
+[![View on GitHub](https://img.shields.io/badge/View_on-GitHub-181717.svg?logo=github&logoColor=white)](https://github.com/yuchong-li/tracing-run)
 
 [为什么写这个](#为什么写这个) · [这个适合谁](#这个适合谁) · [实际效果](#实际效果) · [如何工作](#如何工作) · [快速开始](#快速开始)
 

@@ -6,6 +6,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
 [![Built with FastHTML](https://img.shields.io/badge/built%20with-FastHTML-7c3aed.svg)](https://fastht.ml)
+[![View on GitHub](https://img.shields.io/badge/View_on-GitHub-181717.svg?logo=github&logoColor=white)](https://github.com/yuchong-li/tracing-run)
 
 [Why](#why-i-built-this) · [What this is](#what-this-is--and-isnt) · [See it in action](#see-it-in-action) · [How it works](#how-it-works) · [Quick Start](#quick-start)
 
