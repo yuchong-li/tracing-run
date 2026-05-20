@@ -525,6 +525,17 @@ STRINGS: dict[str, str] = {
     "overall_sys.training_background_header": "\n\n【训练背景】\n",
     "overall_sys.prior_summary_header":    "\n\n【之前对话摘要】\n",
 
+    # 时间感知模块（追加到 system prompt + 历史消息时间戳）。
+    "time_awareness.now_header":           "\n\n【当前时间】\n",
+    "time_awareness.now_format":           "{date}（{weekday}）{time} {tz}",
+    "time_awareness.weekday_0":            "周一",
+    "time_awareness.weekday_1":            "周二",
+    "time_awareness.weekday_2":            "周三",
+    "time_awareness.weekday_3":            "周四",
+    "time_awareness.weekday_4":            "周五",
+    "time_awareness.weekday_5":            "周六",
+    "time_awareness.weekday_6":            "周日",
+
     # chat_helpers.summarize_chunk (LLM-context labels)
     "chat_summary.prior_summary_label":    "已有摘要（之前部分）：",
     "chat_summary.chunk_label":            "对话片段：",

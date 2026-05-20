@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Application source — FastHTML single-file UI + extracted helpers + backend
 COPY coach_app.py chat_helpers.py coach_helpers.py \
      garmin_data.py garmin_auth.py user_config.py db.py review_tools.py \
-     report_jobs.py VERSION ./
+     report_jobs.py time_awareness.py VERSION ./
 COPY prompts/ ./prompts/
 COPY ui/ ./ui/
 COPY review_builders/ ./review_builders/

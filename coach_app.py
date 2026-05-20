@@ -109,6 +109,7 @@ import user_config as uc
 from review_builders import dispatch as _dispatch_builder
 import report_jobs
 import i18n
+import time_awareness as ta
 
 # ── In-process state for async background ops ─────────────────────────────────
 _sync_state: dict = {"running": False, "msg": "", "frac": 0.0, "error": ""}
@@ -4130,10 +4131,11 @@ def sse_stream(token: str):
         if new_sum:
             sys_prompt = sys_prompt + i18n.t("overall_sys.prior_summary_header") + new_sum
 
-        # Recent verbatim messages (gap-free: summary covers [0:new_idx],
-        # recent covers [new_idx:])
-        recent = [{"role": m["role"], "content": m["content"]}
-                  for m in msgs[new_idx:]]
+        # Time-awareness: tell the LLM what "now" is, and stamp user msgs with
+        # send-time so it can reason about gaps (e.g. "you asked about Thu's
+        # intervals on Wed evening; they're now in the past").
+        sys_prompt = sys_prompt + ta.now_block()
+        recent = ta.annotate_history(msgs[new_idx:])
         return [{"role": "system", "content": sys_prompt}] + recent
 
     # ── Lazy seed branch: do fetch + builder + prompt assembly INSIDE the
@@ -4205,7 +4207,7 @@ def sse_stream(token: str):
                     comment_instruction=comment_instruction,
                 ) + _follow_ups_instruction()
                 messages_list = [
-                    {"role": "system", "content": coach_sys(cfg)},
+                    {"role": "system", "content": coach_sys(cfg) + ta.now_block()},
                     {"role": "user",   "content": user_prompt},
                 ]
 

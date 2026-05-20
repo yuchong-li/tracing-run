@@ -522,6 +522,17 @@ You've just reviewed their recent training (see the user message below); give th
     "overall_sys.training_background_header": "\n\n[Training background]\n",
     "overall_sys.prior_summary_header":    "\n\n[Prior conversation summary]\n",
 
+    # Time-awareness block (appended to system prompt + history annotation).
+    "time_awareness.now_header":           "\n\n[Current time]\n",
+    "time_awareness.now_format":           "{date} ({weekday}) {time} {tz}",
+    "time_awareness.weekday_0":            "Monday",
+    "time_awareness.weekday_1":            "Tuesday",
+    "time_awareness.weekday_2":            "Wednesday",
+    "time_awareness.weekday_3":            "Thursday",
+    "time_awareness.weekday_4":            "Friday",
+    "time_awareness.weekday_5":            "Saturday",
+    "time_awareness.weekday_6":            "Sunday",
+
     # chat_helpers.summarize_chunk (LLM-context labels)
     "chat_summary.prior_summary_label":    "Existing summary (earlier portion): ",
     "chat_summary.chunk_label":            "Conversation chunk:",
