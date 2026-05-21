@@ -153,6 +153,12 @@ sequenceDiagram
 
 所以"看一下我这个月长距离的 Pa:HR 趋势"无需手动拼接数据。
 
+### 🌐 Web 搜索 —— 当数据不够用的时候
+
+两类聊天都还有一个 `web_search(query)` 工具, 后端是 [Tavily](https://tavily.com)。教练自己决定什么时候调 —— system prompt 引导它优先用于训练方法学问题、横向对比 (*"我这 VO2max 在 30 岁男跑者里算什么水平"*)、装备、伤病康复方案、它可能不知道的近期研究 —— 同时刻意避开你自己的数据已经能回答的问题。
+
+引用源会附 URL。Tavily 免费档每月 1000 次搜索, 个人用足够。不填 `TAVILY_API_KEY` 就关掉这个工具, 教练会说"搜不了", 不会编。
+
 ## 如何工作
 
 ```mermaid
@@ -243,6 +249,8 @@ LLM 侧同样 locale-aware: 每个 typed-builder 报告在 `prompts/en/` 与 `pr
 | Ollama (本地)  | `http://host.docker.internal:11434/v1` | 免费, 模型本地跑, key 随便填一个字符串即可 |
 
 `setup.sh` 会提示输入 base URL 与 key，同时会设置一个登录密码并问你的名字。
+
+**可选**: 一个 [Tavily](https://tavily.com) API key (免费档每月 1000 次) 启用教练的 web 搜索工具。在 `.env` 里加 `TAVILY_API_KEY=...` —— 不填就关掉这个工具。
 
 ```bash
 git clone https://github.com/yuchong-li/tracing-run.git

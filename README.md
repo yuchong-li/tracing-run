@@ -153,6 +153,12 @@ It provides three cross-activity tools:
 
 So questions like "show me my Pa:HR trend across long runs this month" get answered without manual data stitching.
 
+### 🌐 Web search — when your data isn't enough
+
+Both chats also have a `web_search(query)` tool, backed by [Tavily](https://tavily.com). The coach decides when to use it — the system prompt steers it toward training methodology, normative comparisons (*"is my VO2max strong for a 30yo male?"*), gear, rehab protocols, and recent research it may not know — and away from things your own data already answers.
+
+Sources are cited by URL. Tavily's free tier (1000 searches/month) covers personal use. Leave `TAVILY_API_KEY` blank to disable the tool — the coach will say it can't search rather than hallucinate.
+
 ## How it works
 
 ```mermaid
@@ -243,6 +249,8 @@ The LLM side is locale-aware too: every typed-builder report has parallel prompt
 | Ollama (local) | `http://host.docker.internal:11434/v1` | free, runs models locally, any key string works |
 
 `setup.sh` asks for the base URL + key, plus a login password and your display name.
+
+**Optional**: a [Tavily](https://tavily.com) API key (free tier: 1000 searches/month) enables the coach's web-search tool. Add it as `TAVILY_API_KEY=...` in `.env` — leave blank to disable.
 
 ```bash
 git clone https://github.com/yuchong-li/tracing-run.git
