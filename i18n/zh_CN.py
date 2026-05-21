@@ -536,6 +536,12 @@ STRINGS: dict[str, str] = {
     "time_awareness.weekday_5":            "周六",
     "time_awareness.weekday_6":            "周日",
 
+    # Web 搜索工具的使用指引（启用时追加到聊天 system prompt）。
+    "web_search.guidance":                 "\n\n【Web 搜索工具】\n你有 `web_search(query)` 工具可用。\n使用场景：训练方法学问题（如「30 岁男性 Zone 2 心率多少合适」）、横向对比（如「我这 VO2max 在同年龄段算什么水平」）、比赛结果、装备、伤病康复方案、你不一定知道的近期研究。\n不要使用：用户自己的数据已经在 context 中能回答的问题、闲聊或与跑步无关的泛话题、对话里已经讨论清楚的事实。\n使用搜索结果时，请用 URL 标注来源。",
+
+    # 缩写解释规则 —— 追加到聊天 system prompt，让 LLM 在面向用户的正文里第一次出现时展开。
+    "abbreviations.glossary":              "\n\n【缩写解释规则】\n在面向用户的正文里第一次出现以下缩写时，请先展开（例：「垂直振幅比（VR）8.2%」），之后再继续用缩写：\n- VR = Vertical Ratio（垂直振幅比）\n- CV = Coefficient of Variation（变异系数，配速稳定性 / 锯齿指标）\n- GCT = Ground Contact Time（着地时间）\n- EF = Efficiency Factor（效率因子，配速 ÷ HR）\n- TE = Training Effect（训练效益，Garmin 的有氧 / 无氧负荷得分）\n- Pa:HR = Pace-to-HR ratio（脱节率）\n- GAP = Grade-Adjusted Pace（坡度调整配速）\nContext 里的数据表格可以保留缩写——只在用户能看到的正文里展开。",
+
     # chat_helpers.summarize_chunk (LLM-context labels)
     "chat_summary.prior_summary_label":    "已有摘要（之前部分）：",
     "chat_summary.chunk_label":            "对话片段：",

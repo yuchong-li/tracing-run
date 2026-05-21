@@ -26,6 +26,9 @@ services:
       LLM_API_KEY:   ${LLM_API_KEY:-local-proxy}
       DISPLAY_NAME:  ${DISPLAY_NAME:-Runner}
       DEFAULT_MODEL: ${DEFAULT_MODEL:-gpt-5.4}
+      # Optional — enables the AI coach's web_search tool. Without it, the
+      # coach answers "I can't search" when asked to look something up.
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       # ${VAR:?msg} = compose REFUSES to start if VAR is unset/empty.
       # No-auth would expose the instance to anyone with the URL — intolerable
       # under a Cloudflare tunnel or any public route.

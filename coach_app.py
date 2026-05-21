@@ -4134,7 +4134,7 @@ def sse_stream(token: str):
         # Time-awareness: tell the LLM what "now" is, and stamp user msgs with
         # send-time so it can reason about gaps (e.g. "you asked about Thu's
         # intervals on Wed evening; they're now in the past").
-        sys_prompt = sys_prompt + ta.now_block()
+        sys_prompt = sys_prompt + ta.now_block() + i18n.t("web_search.guidance") + i18n.t("abbreviations.glossary")
         recent = ta.annotate_history(msgs[new_idx:])
         return [{"role": "system", "content": sys_prompt}] + recent
 
@@ -4207,7 +4207,7 @@ def sse_stream(token: str):
                     comment_instruction=comment_instruction,
                 ) + _follow_ups_instruction()
                 messages_list = [
-                    {"role": "system", "content": coach_sys(cfg) + ta.now_block()},
+                    {"role": "system", "content": coach_sys(cfg) + ta.now_block() + i18n.t("web_search.guidance") + i18n.t("abbreviations.glossary")},
                     {"role": "user",   "content": user_prompt},
                 ]
 

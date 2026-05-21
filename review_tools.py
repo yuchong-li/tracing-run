@@ -31,7 +31,41 @@ import sqlite3
 from typing import Optional
 
 import db
+import web_search
 from review_builders.primitives import seg_stats, hr_drift, ROW_SEC
+
+
+# ── Shared tool: web search (exposed to both per-activity + overall chats) ──
+
+_WEB_SEARCH_SCHEMA = {
+    "type": "function",
+    "function": {
+        "name": "web_search",
+        "description": (
+            "Search the live web for running-related facts. USE WHEN: the user "
+            "asks about training methodology, normative comparisons, race "
+            "results, gear, injury rehab protocols, or recent research you "
+            "may not know about. DO NOT USE for questions answerable from the "
+            "user's own data already in context, for casual chat, or for "
+            "generic non-running topics. Cite sources by URL when you use a "
+            "result in your reply."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search query in plain natural language.",
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Max results to return (default 5, max 10).",
+                },
+            },
+            "required": ["query"],
+        },
+    },
+}
 
 
 # ── Sampling thresholds ("medium" cap) ──────────────────────────────────────
@@ -562,6 +596,7 @@ TOOL_SCHEMAS = [
             },
         },
     },
+    _WEB_SEARCH_SCHEMA,
 ]
 
 
@@ -576,6 +611,7 @@ def make_tool_handlers(activity_id: int) -> dict:
             get_raw_window_by_distance(activity_id, **kw),
         "get_window_stats": lambda **kw:
             get_window_stats(activity_id, **kw),
+        "web_search": lambda **kw: web_search.search(**kw),
     }
 
 
@@ -901,6 +937,7 @@ OVERALL_TOOL_SCHEMAS = [
             },
         },
     },
+    _WEB_SEARCH_SCHEMA,
 ]
 
 
@@ -911,4 +948,5 @@ def make_overall_tool_handlers() -> dict:
         "find_activities":     find_activities,
         "get_activity_report": get_activity_report,
         "get_metric_trend":    get_metric_trend,
+        "web_search":          lambda **kw: web_search.search(**kw),
     }

@@ -533,6 +533,13 @@ You've just reviewed their recent training (see the user message below); give th
     "time_awareness.weekday_5":            "Saturday",
     "time_awareness.weekday_6":            "Sunday",
 
+    # Web-search tool guidance (appended to chat system prompts when enabled).
+    "web_search.guidance":                 "\n\n[Web search tool]\nYou have `web_search(query)` available. USE IT FOR: training methodology (e.g. \"good Z2 HR for 30yo male\"), normative comparisons (e.g. \"is my VO2max strong for my age\"), race results, gear, injury rehab protocols, or recent research you may not know. DO NOT USE for: questions answerable from the user's own data already in context, casual chat, generic non-running topics, or re-deriving facts already established in this conversation. Cite sources by URL when you use a result.",
+
+    # Abbreviation glossary — appended to chat system prompts so the LLM
+    # expands jargon for the reader on first mention.
+    "abbreviations.glossary":              "\n\n[Abbreviation glossary]\nWhen using these abbreviations in user-facing prose, expand on first mention (e.g. \"Vertical Ratio (VR) 8.2%\"), then use the short form afterwards:\n- VR = Vertical Ratio\n- CV = Coefficient of Variation (pace stability / sawtooth indicator)\n- GCT = Ground Contact Time\n- EF = Efficiency Factor (pace ÷ HR)\n- TE = Training Effect (Garmin's aerobic / anaerobic load score)\n- Pa:HR = Pace-to-HR ratio (cardiac drift)\n- GAP = Grade-Adjusted Pace\nContext-data tables can keep abbreviations short — only expand in narrative replies the user reads.",
+
     # chat_helpers.summarize_chunk (LLM-context labels)
     "chat_summary.prior_summary_label":    "Existing summary (earlier portion): ",
     "chat_summary.chunk_label":            "Conversation chunk:",
