@@ -224,8 +224,9 @@ STRINGS: dict[str, str] = {
 
     "settings.footer.tagline":   "tracing.run · v{version}",
     "settings.footer.credits":   ("感谢这些开源项目让本应用成为可能：FastHTML · htmx · "
-                                  "Tailwind CSS · marked.js · plotly · garth · "
-                                  "garminconnect · Playwright"),
+                                  "Tailwind CSS · marked.js · Plotly · garth · "
+                                  "garminconnect · Playwright · SQLite"),
+    "settings.footer.credits_web_search": "Web 搜索由 Tavily 提供",
 
     # ── Chat panels (overall + activity) ─────────────────────────────────────
     "chat.overall.placeholder":  ("和教练聊聊训练…"

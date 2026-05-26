@@ -221,8 +221,9 @@ STRINGS: dict[str, str] = {
 
     "settings.footer.tagline":   "tracing.run · v{version}",
     "settings.footer.credits":   ("Thanks to the open-source projects that make this app possible: "
-                                  "FastHTML · htmx · Tailwind CSS · marked.js · plotly · garth · "
-                                  "garminconnect · Playwright"),
+                                  "FastHTML · htmx · Tailwind CSS · marked.js · Plotly · "
+                                  "garth · garminconnect · Playwright · SQLite"),
+    "settings.footer.credits_web_search": "Web search powered by Tavily",
 
     # ── Chat panels (overall + activity) ─────────────────────────────────────
     "chat.overall.placeholder":  ("Tracing with coach…"

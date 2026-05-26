@@ -4605,6 +4605,8 @@ def get_settings(req=None):
                       cls="text-[11px] text-gray-500"),
                     P(i18n.t("settings.footer.credits"),
                       cls="text-[11px] text-gray-600 mt-1 leading-relaxed"),
+                    P(i18n.t("settings.footer.credits_web_search"),
+                      cls="text-[11px] text-gray-600 mt-1 leading-relaxed"),
                     cls="text-center mt-12 pb-2",
                 ),
 
