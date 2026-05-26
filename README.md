@@ -60,7 +60,6 @@ To keep focus, the following are intentionally out of scope:
 - ❌ Streak / beginner encouragement / gamification
 - ❌ Desktop multi-widget dashboards
 - ❌ Fully-automated training plan generation
-- ❌ Connecting to Chinese-mainland-only data sources (咕咚 / Keep / 华为运动健康)
 
 If you open an issue for one of these, I'll close it pointing here. Not because the idea is bad — because focus is the whole point.
 
