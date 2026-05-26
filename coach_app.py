@@ -1524,11 +1524,19 @@ app, rt_route = fast_app(
               ev.target.closest('form').requestSubmit();
             }
           }
+          // Auto-grow chat textareas as content wraps (cap ~6 rows)
+          function autoGrow(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+          }
           // Clear textarea after submit
           document.addEventListener('htmx:afterRequest', (ev) => {
             if (ev.detail.elt.tagName === 'FORM' && ev.detail.elt.dataset.clearOnSend === '1') {
               const ta = ev.detail.elt.querySelector('textarea');
-              if (ta) ta.value = '';
+              if (ta) {
+                ta.value = '';
+                ta.style.height = 'auto';
+              }
             }
           });
         """)),
@@ -2355,6 +2363,7 @@ def ChatPanel(*, kind: str, activity_id: int | None, header, messages: list, mod
                          name="msg",
                          placeholder=placeholder,
                          onkeydown="sendOnEnter(event)",
+                         oninput="autoGrow(this)",
                          rows="1",
                          cls="flex-1 bg-gray-800 text-gray-100 rounded-xl px-4 py-2.5 resize-none border border-gray-700 focus:border-blue-500 focus:outline-none text-sm leading-snug"),
                 Button(i18n.t("chat.send"),
@@ -2365,7 +2374,7 @@ def ChatPanel(*, kind: str, activity_id: int | None, header, messages: list, mod
                 hx_swap="beforeend",
                 hx_include="[name=msg]",
                 **{"data-clear-on-send": "1"},
-                cls="flex items-end max-w-3xl mx-auto w-full",
+                cls="flex items-center max-w-3xl mx-auto w-full",
             ),
             Div(
                 Span(i18n.t("chat.model_pfx", model=model), cls="text-[10px] text-gray-500"),
@@ -2415,6 +2424,7 @@ def ActivityChatPanel(*, aid: int, header, report_card, messages: list, model: s
                          name="msg",
                          placeholder=_random_placeholder("chat.activity.placeholder"),
                          onkeydown="sendOnEnter(event)",
+                         oninput="autoGrow(this)",
                          rows="1",
                          cls="flex-1 bg-gray-800 text-gray-100 rounded-xl px-4 py-2.5 resize-none border border-gray-700 focus:border-blue-500 focus:outline-none text-sm leading-snug"),
                 Button(i18n.t("chat.send"),
@@ -2425,7 +2435,7 @@ def ActivityChatPanel(*, aid: int, header, report_card, messages: list, model: s
                 hx_swap="beforeend",
                 hx_include="[name=msg]",
                 **{"data-clear-on-send": "1"},
-                cls="flex items-end max-w-3xl mx-auto w-full",
+                cls="flex items-center max-w-3xl mx-auto w-full",
             ),
             Div(
                 Span(i18n.t("chat.model_pfx", model=model), cls="text-[10px] text-gray-500"),
@@ -3907,6 +3917,7 @@ def _seed_report_panel(aid: int, req=None):
                     Textarea("", name="msg", rows="1",
                              placeholder=i18n.t("chat.activity.placeholder_generating"),
                              onkeydown="sendOnEnter(event)",
+                             oninput="autoGrow(this)",
                              cls="flex-1 bg-gray-800 text-gray-100 rounded-xl px-4 py-2.5 resize-none border border-gray-700 text-sm"),
                     Button(i18n.t("chat.send"), type="submit",
                            cls="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium ml-2"),
@@ -3914,7 +3925,7 @@ def _seed_report_panel(aid: int, req=None):
                     hx_target="#chat-scroll",
                     hx_swap="beforeend",
                     **{"data-clear-on-send": "1"},
-                    cls="flex items-end max-w-3xl mx-auto w-full",
+                    cls="flex items-center max-w-3xl mx-auto w-full",
                 ),
                 cls="fixed bottom-0 left-0 right-0 md:left-72 z-10 "
                     "border-t border-gray-800 bg-gray-950 "
