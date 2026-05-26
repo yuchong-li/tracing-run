@@ -523,6 +523,16 @@ app, rt_route = fast_app(
           @media (max-width: 768px) {
             input, textarea, select { font-size: 16px !important; }
           }
+          /* Streaming lock — while LLM is generating a response, gray out and
+             disable click on Send + chips (textarea stays usable for drafting).
+             The htmx:beforeRequest guard is the real gate; this is the visual
+             cue + anti-misclick. */
+          body[data-streaming="1"] form[data-clear-on-send] button[type="submit"],
+          body[data-streaming="1"] #follow-up-chips button {
+            opacity: .5;
+            cursor: not-allowed;
+            pointer-events: none;
+          }
           /* htmx applies .htmx-request to the element that triggered the
              pending request. Fade clicked sidebar items so user gets visual
              feedback during slow first-fetch (5-30s) of activity detail. */
@@ -710,8 +720,21 @@ app, rt_route = fast_app(
             const url = el.dataset.streamUrl;
             if (!url || el.dataset.streaming === '1') return;
             el.dataset.streaming = '1';
+            setStreaming(true);
+            // Watchdog: force-unlock after 90s for every abnormal path —
+            // EventSource never opens, token already dead (stale bubble
+            // after a refresh), server hangs without sending `done`. Without
+            // this, any such path would leave the UI permanently locked.
+            let _watchdog = setTimeout(() => {
+              setStreaming(false);
+              stopThinkingCycle(el);
+              el.classList.remove('typing', 'italic', 'text-gray-400');
+              try { es.close(); } catch(e) {}
+            }, 90000);
             const es = new EventSource(url);
             const finish = () => {
+              clearTimeout(_watchdog);
+              setStreaming(false);
               stopThinkingCycle(el);
               el.classList.remove('typing', 'italic', 'text-gray-400');
               renderMD(el);
@@ -815,7 +838,23 @@ app, rt_route = fast_app(
                 scrollChat();
               } catch(e) { console.error('tool event parse fail', e); }
             });
-            es.onerror = finish;  // network drop / server close
+            // Error path: unlock + show recoverable message instead of running
+            // finish() (which would renderMD on a possibly-empty bubble and
+            // leave it blank). If we got partial content, render what we have.
+            es.onerror = () => {
+              clearTimeout(_watchdog);
+              setStreaming(false);
+              stopThinkingCycle(el);
+              el.classList.remove('typing', 'italic', 'text-gray-400');
+              if (el.dataset.streamingStarted !== '1') {
+                el.textContent = I18N['js.stream.error'];
+                el.classList.add('text-gray-500', 'italic');
+              } else {
+                renderMD(el);
+              }
+              try { es.close(); } catch(e) {}
+              scrollChat();
+            };
           }
           // Force Plotly charts to re-measure their container. The inline
           // Plotly.newPlot(...) scripts that Plotly emits run during parse,
@@ -1529,6 +1568,25 @@ app, rt_route = fast_app(
             ta.style.height = 'auto';
             ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
           }
+          // Streaming lock — toggled by startStream/finish/onerror/watchdog so
+          // Send + chips can't fire a parallel POST while the LLM is replying.
+          function setStreaming(on) {
+            document.body.dataset.streaming = on ? '1' : '';
+          }
+          function isStreaming() {
+            return document.body.dataset.streaming === '1';
+          }
+          // Hard gate for any chat-composer submit (Enter, chip programmatic
+          // requestSubmit, Send button click that bypasses CSS pointer-events).
+          // Only blocks chat composers — unrelated htmx requests (sync,
+          // settings, sidebar nav) keep working during a stream.
+          document.addEventListener('htmx:beforeRequest', (ev) => {
+            const form = ev.detail.elt;
+            if (isStreaming()
+                && form && form.dataset && form.dataset.clearOnSend === '1') {
+              ev.preventDefault();
+            }
+          });
           // Clear textarea after submit
           document.addEventListener('htmx:afterRequest', (ev) => {
             if (ev.detail.elt.tagName === 'FORM' && ev.detail.elt.dataset.clearOnSend === '1') {
@@ -2216,6 +2274,7 @@ _JS_I18N_KEYS = (
     "js.report.pill.done", "js.report.pill.fail", "js.report.fail_msg",
     "js.stream.chip0", "js.stream.chip1", "js.stream.chip2",
     "js.stream.chip3", "js.stream.chip4",
+    "js.stream.error",
 )
 
 

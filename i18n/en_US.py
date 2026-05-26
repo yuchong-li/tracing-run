@@ -340,6 +340,7 @@ STRINGS: dict[str, str] = {
     "js.stream.chip2":           "🔍 Cross-checking context + workout plan…",
     "js.stream.chip3":           "💭 Choosing words…",
     "js.stream.chip4":           "✍️ Drafting recommendations…",
+    "js.stream.error":           "Connection interrupted, please retry",
 
     # ── Activity tag taxonomy (P2). Keys mirror user_config.ACTIVITY_TAG_KEYS.
     "tag.empty":              "— Untagged —",

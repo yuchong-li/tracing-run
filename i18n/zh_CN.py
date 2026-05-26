@@ -343,6 +343,7 @@ STRINGS: dict[str, str] = {
     "js.stream.chip2":           "🔍 对照训练背景与课表…",
     "js.stream.chip3":           "💭 斟酌教练措辞…",
     "js.stream.chip4":           "✍️ 整理建议中…",
+    "js.stream.error":           "连接中断，请重试",
 
     # ── Activity tag taxonomy (P2). Keys mirror user_config.ACTIVITY_TAG_KEYS.
     "tag.empty":              "— 未标记 —",
