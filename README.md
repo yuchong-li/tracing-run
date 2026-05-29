@@ -267,6 +267,7 @@ On first launch the app asks for the login password (set during setup), then you
 - **Garmin**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect) + [garth](https://github.com/matin/garth) + headless Playwright (for OAuth/MFA handling)
 - **Storage**: SQLite (single file)
 - **LLM**: any OpenAI-compatible endpoint — defaults to a local LiteLLM proxy
+- **Web search**: [Tavily](https://tavily.com) (optional — powers the coach's `web_search` tool)
 - **Deploy**: docker-compose
 
 ## A note on contributing
