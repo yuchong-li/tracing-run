@@ -267,6 +267,7 @@ open http://localhost:8507
 - **Garmin**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect) + [garth](https://github.com/matin/garth) + 无头 Playwright (处理 OAuth/MFA)
 - **存储**: SQLite (单文件)
 - **LLM**: 任意 OpenAI 兼容 endpoint, 默认指向本地 LiteLLM proxy
+- **Web 搜索**: [Tavily](https://tavily.com) (可选 —— 驱动教练的 `web_search` 工具)
 - **部署**: docker-compose
 
 ## 关于贡献
