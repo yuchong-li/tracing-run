@@ -97,6 +97,35 @@ print(f"Smoke OK — {len(imported)} top-level modules resolve across source tre
 PYEOF
 }
 
+# Publish a GitHub Release for an already-pushed tag. A git tag and a GitHub
+# Release are different objects — `git push <tag>` creates only the former, so
+# this fills in the latter to match the v1.0.x releases on the repo.
+#
+# Deliberately non-fatal: by the time this runs the image is built and the tag
+# is pushed, so a missing release is cosmetic. Missing/unauthenticated gh, or
+# an already-existing release, just warn and return 0 — never abort the build.
+create_github_release() {
+    local tag="$1" message="$2"
+    if ! command -v gh >/dev/null 2>&1; then
+        warn "gh CLI not found — skipping GitHub Release. Create later: gh release create $tag"
+        return 0
+    fi
+    if ! gh auth status >/dev/null 2>&1; then
+        warn "gh not authenticated — skipping GitHub Release. Run 'gh auth login', then: gh release create $tag"
+        return 0
+    fi
+    if gh release view "$tag" >/dev/null 2>&1; then
+        warn "GitHub Release $tag already exists — leaving it untouched."
+        return 0
+    fi
+    info "Publishing GitHub Release: $tag"
+    if gh release create "$tag" --title "$tag — $message" --notes "$message"; then
+        success "Published GitHub Release $tag"
+    else
+        warn "GitHub Release $tag failed — create manually: gh release create $tag --title \"$tag — $message\""
+    fi
+}
+
 # ── build ────────────────────────────────────────────────────────────────────
 # Builds the image, smoke-tests it, tags git + image. Does NOT deploy to any
 # prod container — that's a separate explicit step (`deploy <name>`).
@@ -177,6 +206,9 @@ cmd_build() {
     info "Tagging git: $full_version"
     git tag -a "$full_version" -m "$message"
     git push origin "$full_version"
+
+    # Tag exists on remote now — publish the matching GitHub Release (non-fatal).
+    create_github_release "$full_version" "$message"
 
     info "Tagging image: ${IMAGE_NAME}:${image_version}"
     docker tag "${IMAGE_NAME}:${latest_tag}" "${IMAGE_NAME}:${image_version}"
