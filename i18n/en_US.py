@@ -456,7 +456,7 @@ Based on the specific content of this reply, recommend **3 of the most worthwhil
 """,
 
     # build_coaching_context section headers + per-line labels.
-    "coach_ctx.header":                  "# Garmin training data ({date})\n",
+    "coach_ctx.header":                  "# Garmin training data ({date} {weekday})\n",
     "coach_ctx.recent_activities_header": "\n## Recent {days}-day activities ({n} sessions)",
     "coach_ctx.avg_pace":                "avg pace {pace}",
     "coach_ctx.avg_speed":               "avg speed {kmh:.1f} km/h",
@@ -526,7 +526,18 @@ You've just reviewed their recent training (see the user message below); give th
 
     # Time-awareness block (appended to system prompt + history annotation).
     "time_awareness.now_header":           "\n\n[Current time]\n",
-    "time_awareness.now_format":           "{date} ({weekday}) {time} {tz}",
+    "time_awareness.now_format":           "{date} ({weekday}) {time} {tz} (UTC{offset})",
+    # Activity date label: weekday is computed in Python from local time, so the
+    # LLM never has to derive day-of-week itself (a known weak spot). The _tz
+    # variant is used only when the activity's UTC offset differs from "now"
+    # (i.e. it was logged in a different timezone).
+    "time_awareness.date_weekday":         "{date} ({weekday})",
+    "time_awareness.date_weekday_tz":      "{date} ({weekday}, UTC{offset})",
+    # Full activity time label: local date+weekday+time, TZ tag when traveling,
+    # plus the absolute UTC timestamp so the LLM can compute real gaps.
+    "time_awareness.activity_dt":          "{date} ({weekday}) {time}",
+    "time_awareness.activity_dt_tz":       "{date} ({weekday}) {time} (UTC{offset})",
+    "time_awareness.utc_suffix":           " · UTC {utc}",
     "time_awareness.weekday_0":            "Monday",
     "time_awareness.weekday_1":            "Tuesday",
     "time_awareness.weekday_2":            "Wednesday",

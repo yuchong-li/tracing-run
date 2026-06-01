@@ -7,6 +7,7 @@ from datetime import date, timedelta
 
 import garmin_data as gd
 import i18n
+import time_awareness as ta
 
 
 def _build_date_background(act: dict, det: dict) -> str:
@@ -16,10 +17,13 @@ def _build_date_background(act: dict, det: dict) -> str:
         act_dt = date.fromisoformat(act_date_str)
     except ValueError:
         return ""
+    ref_offset = ta.local_utc_offset_hours()
+    act_label = ta.activity_date_label(
+        act.get("startTimeLocal"), act.get("startTimeGMT"), ref_offset)
     days_ago = (date.today() - act_dt).days
     lines = [
-        i18n.t("date_bg.header", date=act_date_str, days=days_ago),
-        i18n.t("date_bg.note", date=act_date_str),
+        i18n.t("date_bg.header", date=act_label, days=days_ago),
+        i18n.t("date_bg.note", date=act_label),
     ]
     # Surrounding activities: ±4 days, excluding the selected one
     win_start = (act_dt - timedelta(days=4)).isoformat()
@@ -54,9 +58,11 @@ def _build_date_background(act: dict, det: dict) -> str:
                 ap.append(i18n.t("date_bg.avg_hr", hr=a["averageHR"]))
             if a.get("aerobicTrainingEffect"):
                 ap.append(i18n.t("date_bg.aerobic_te", te=a["aerobicTrainingEffect"]))
+            a_label = ta.activity_date_label(
+                a.get("startTimeLocal"), a.get("startTimeGMT"), ref_offset)
             lines.append(i18n.t(
                 "date_bg.surrounding_line",
-                date=a_date, rel=rel, typ=a_typ, stats=" | ".join(ap),
+                date=a_label, rel=rel, typ=a_typ, stats=" | ".join(ap),
             ))
     return "\n".join(lines)
 

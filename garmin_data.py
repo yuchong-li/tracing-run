@@ -14,6 +14,7 @@ from garminconnect import Garmin
 
 import db  # SQLite raw-data tier (Phase 1: dual-write alongside JSON cache)
 import i18n  # tag display rendering for LLM context strings
+import time_awareness as ta  # weekday + cross-TZ date labels for LLM context
 
 
 # ── Exceptions for stale-session detection ───────────────────────────────────
@@ -723,14 +724,27 @@ def build_coaching_context(detailed: dict, longterm: dict | None = None,
     """
     tags     = (user_cfg or {}).get("activity_tags",     {})
     comments = (user_cfg or {}).get("activity_comments", {})
-    today_str = date.today().isoformat()
-    lines = [i18n.t("coach_ctx.header", date=today_str)]
+    today    = date.today()
+    today_str = today.isoformat()
+    # Reference offset = the container "now" timezone. Activities logged at a
+    # different offset (US trip vs AU home) get a UTC tag so the LLM doesn't
+    # treat two runs ~10h apart as the same day just because the local date
+    # strings collide.
+    ref_offset = ta.local_utc_offset_hours()
+    lines = [i18n.t("coach_ctx.header", date=today_str,
+                    weekday=ta.weekday_label(today))]
 
     # ── Recent activities ─────────────────────────────────────────────────────
-    acts = detailed.get("activities", [])
+    # Sort by GMT (true elapsed order), not local-date — across a timezone
+    # change the local date can rank a later run as if it were earlier.
+    acts = sorted(
+        detailed.get("activities", []),
+        key=lambda a: ta._parse_dt(a.get("startTimeGMT")) or ta._parse_dt(a.get("startTimeLocal")) or datetime.min,
+        reverse=True,
+    )
     lines.append(i18n.t("coach_ctx.recent_activities_header", days=DETAILED_DAYS, n=len(acts)))
     for a in acts[:15]:
-        dt = a.get("startTimeLocal", "")[:10]
+        dt = ta.activity_datetime_label(a.get("startTimeLocal"), a.get("startTimeGMT"), ref_offset)
         tk = a.get("activityTypeKey", "")
         dist_km = (a.get("distance") or 0) / 1000
         dur = format_duration(a.get("duration"))

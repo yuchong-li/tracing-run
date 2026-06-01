@@ -983,7 +983,8 @@ def get_recent_activities(conn: sqlite3.Connection, days: int = 90) -> list[dict
         SELECT activity_id, activity_name, activity_type_key, start_time_local,
                distance_m, duration_s, average_hr, max_hr, calories,
                elevation_gain_m, elevation_loss_m, average_speed_mps,
-               te_label, aerobic_te, anaerobic_te, vo2max, training_load
+               te_label, aerobic_te, anaerobic_te, vo2max, training_load,
+               start_time_gmt
           FROM activities
          WHERE start_time_local >= ?
          ORDER BY start_time_local DESC
@@ -1007,6 +1008,7 @@ def get_recent_activities(conn: sqlite3.Connection, days: int = 90) -> list[dict
             "anaerobicTrainingEffect": r[14],
             "vO2MaxValue":             r[15],
             "activityTrainingLoad":    r[16],
+            "startTimeGMT":            r[17] or "",
         }
         for r in rows
     ]

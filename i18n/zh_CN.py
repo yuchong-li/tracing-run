@@ -459,7 +459,7 @@ STRINGS: dict[str, str] = {
 """,
 
     # build_coaching_context section headers + per-line labels (LLM context).
-    "coach_ctx.header":                  "# Garmin 运动数据（{date}）\n",
+    "coach_ctx.header":                  "# Garmin 运动数据（{date} {weekday}）\n",
     "coach_ctx.recent_activities_header": "\n## 最近 {days} 天活动（共 {n} 次）",
     "coach_ctx.avg_pace":                "均配 {pace}",
     "coach_ctx.avg_speed":               "均速 {kmh:.1f}km/h",
@@ -529,7 +529,15 @@ STRINGS: dict[str, str] = {
 
     # 时间感知模块（追加到 system prompt + 历史消息时间戳）。
     "time_awareness.now_header":           "\n\n【当前时间】\n",
-    "time_awareness.now_format":           "{date}（{weekday}）{time} {tz}",
+    "time_awareness.now_format":           "{date}（{weekday}）{time} {tz}（UTC{offset}）",
+    # 活动日期标签：星期由 Python 从当地时间算出，避免让 LLM 自己推算出错。
+    # _tz 版本仅在该活动的 UTC 偏移与“现在”不同（跨时区）时使用。
+    "time_awareness.date_weekday":         "{date}（{weekday}）",
+    "time_awareness.date_weekday_tz":      "{date}（{weekday}，UTC{offset}）",
+    # 完整活动时间标签：本地日期+星期+时刻，跨时区时加 TZ，并附绝对 UTC 时间。
+    "time_awareness.activity_dt":          "{date}（{weekday}）{time}",
+    "time_awareness.activity_dt_tz":       "{date}（{weekday}）{time}（UTC{offset}）",
+    "time_awareness.utc_suffix":           " · UTC {utc}",
     "time_awareness.weekday_0":            "周一",
     "time_awareness.weekday_1":            "周二",
     "time_awareness.weekday_2":            "周三",
