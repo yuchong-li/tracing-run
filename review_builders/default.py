@@ -215,7 +215,7 @@ def _build_review_ctx(act: dict, detail: dict, all_acts: list,
     dist = (act.get("distance") or 0) / 1000
     lines = [f"# Workout data: {dt} {typ}" + (f"  ({name})" if name else "")]
     if manual_tag:
-        # manual_tag is a stable key (e.g. 'aerobic_base'); render the EN label.
+        # manual_tag is a stable key (e.g. 'aerobic'); render the EN label.
         tag_en = i18n.t(f"tag.{manual_tag}", lang="en-US")
         lines.append(f"**⚑ User-tagged workout type: [{tag_en}]** "
                      "(this tag is authoritative — use it to infer training "

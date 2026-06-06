@@ -41,8 +41,8 @@ PHASES = {
 
 ACTIVITY_TAG_KEYS = [
     "",                  # sentinel for untagged (label via tag.empty)
-    "aerobic_recovery",
-    "aerobic_base",
+    "aerobic",           # merged aerobic_recovery + aerobic_base
+    "steady",            # High Z2 → mid/high Z3 cruise
     "long_run",
     "tempo",
     "threshold",
@@ -58,8 +58,8 @@ ACTIVITY_TAG_KEYS = [
 # dispatch() resolves. For unmapped keys (or "" / "other") the dispatcher
 # falls back to DefaultBuilder.
 ACTIVITY_TAG_TO_BUILDER: dict[str, str] = {
-    "aerobic_recovery": "AerobicBuilder",
-    "aerobic_base":     "AerobicBuilder",    # same builder; prompt distinguishes intent
+    "aerobic":          "AerobicBuilder",
+    "steady":           "AerobicBuilder",    # same builder; steady prompt reframes the reading
     "long_run":         "LongRunBuilder",
     "tempo":            "TempoBuilder",
     "threshold":        "TempoBuilder",      # same builder; prompt distinguishes target
@@ -73,12 +73,12 @@ ACTIVITY_TAG_TO_BUILDER: dict[str, str] = {
 # Tag key → prompt file basename (without `.md` / lang suffix; looked up via
 # load_prompt()). Decoupled from ACTIVITY_TAG_TO_BUILDER because one builder
 # can serve multiple tags with different LLM framings (AerobicBuilder serves
-# aerobic_base + aerobic_recovery, each with its own prompt). Tags not in
-# this map fall back to the generic `review_report` prompt and are flagged
-# beta in the UI.
+# both aerobic + steady, each with its own prompt — same data, opposite reading
+# of the HR-ceiling block). Tags not in this map fall back to the generic
+# `review_report` prompt and are flagged beta in the UI.
 ACTIVITY_TAG_TO_PROMPT: dict[str, str] = {
-    "aerobic_base":     "review_report_aerobic_base",
-    "aerobic_recovery": "review_report_aerobic_recovery",
+    "aerobic":          "review_report_aerobic",
+    "steady":           "review_report_steady",
     "long_run":         "review_report_long_run",
     "tempo":            "review_report_tempo",
     "threshold":        "review_report_threshold",

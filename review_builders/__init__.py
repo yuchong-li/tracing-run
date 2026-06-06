@@ -36,7 +36,7 @@ __all__ = ["dispatch", "is_beta", "BuildResult", "ReviewBuilder",
 # is_beta() flags them with a "(beta)" suffix in the UI.
 _BUILDER_REGISTRY: dict[str, type[ReviewBuilder]] = {
     "DefaultBuilder":  DefaultBuilder,
-    "AerobicBuilder":  AerobicBuilder,    # aerobic_recovery + aerobic_base
+    "AerobicBuilder":  AerobicBuilder,    # aerobic + steady
     "LongRunBuilder":  LongRunBuilder,    # long_run
     "TempoBuilder":    TempoBuilder,      # tempo + threshold
     "IntervalBuilder": IntervalBuilder,   # intervals

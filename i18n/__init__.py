@@ -8,7 +8,7 @@ Resolution order (set by `set_request_locale` in the LocaleMiddleware):
   5. db.LOCALE_DEFAULT ('en-US')
 
 Catalogs live in `i18n/<lang>.py` as a STRINGS dict keyed by dotted strings
-(e.g. `tag.aerobic_base`). Missing keys log a warning and fall back to
+(e.g. `tag.aerobic`). Missing keys log a warning and fall back to
 zh-CN; missing in zh-CN too returns the key itself so the UI is debuggable.
 
 Usage:

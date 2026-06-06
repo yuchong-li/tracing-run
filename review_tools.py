@@ -854,7 +854,7 @@ OVERALL_TOOL_SCHEMAS = [
                         "type": "string",
                         "description": "Exact stable tag key, e.g. 'long_run', 'race', "
                                        "'intervals', 'hill', 'tempo', 'threshold', "
-                                       "'aerobic_base', 'aerobic_recovery', 'trail'. "
+                                       "'aerobic', 'steady', 'trail'. "
                                        "Omit to match any tag.",
                     },
                     "name_contains": {

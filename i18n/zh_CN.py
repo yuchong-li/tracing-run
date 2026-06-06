@@ -348,8 +348,8 @@ STRINGS: dict[str, str] = {
 
     # ── Activity tag taxonomy (P2). Keys mirror user_config.ACTIVITY_TAG_KEYS.
     "tag.empty":              "— 未标记 —",
-    "tag.aerobic_recovery":   "有氧恢复",
-    "tag.aerobic_base":       "有氧基础",
+    "tag.aerobic":            "有氧",
+    "tag.steady":             "稳态巡航",
     "tag.long_run":           "长距离",
     "tag.tempo":              "节奏跑",
     "tag.threshold":          "阈值跑",

@@ -436,6 +436,23 @@ _MIGRATIONS: list[tuple[int, str]] = [
         END
         WHERE terrain IN ('公路', '越野');
     """),
+    (10, """
+        -- ── Merge aerobic_recovery + aerobic_base → aerobic ─────────────────
+        -- The recovery/base distinction wasn't meaningful in practice (both are
+        -- "accumulate aerobic volume", differing only in the day's volume/feel).
+        -- Collapse to a single `aerobic` key. The new `steady` tag has no
+        -- historic equivalent — old aerobic runs that were really steady
+        -- (HR ~143-150) must be re-tagged by hand in the UI; this migration
+        -- only does the mechanical key collapse. Idempotent: the WHERE filter
+        -- skips any tag already collapsed.
+        UPDATE user_activity_tags
+           SET tag = 'aerobic'
+         WHERE tag IN ('aerobic_recovery', 'aerobic_base');
+
+        UPDATE activity_review_context
+           SET tag_at_generation = 'aerobic'
+         WHERE tag_at_generation IN ('aerobic_recovery', 'aerobic_base');
+    """),
 ]
 
 

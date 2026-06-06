@@ -1,10 +1,12 @@
-"""AerobicBuilder — for `aerobic_recovery` + `aerobic_base` tags.
+"""AerobicBuilder — for the `aerobic` + `steady` tags.
 
-Both tags are aerobic-running activities (low-Z2 recovery to high-Z2 / low-Z3
-base accumulation). The data analysis is identical for both; the recovery vs
-base distinction is surfaced by the prompt, not the math. (NB: don't mistake
-this for "Z2-only" — many trained-base runs technically straddle Z2/Z3 by
-Garmin's auto-zones; the framework here is general aerobic-running.)
+Both tags are aerobic-running activities (the merged `aerobic` covers former
+recovery/base low-Z2→low-Z3 accumulation; `steady` is the High-Z2→mid/high-Z3
+cruise). The data analysis is identical for both; the difference is purely in
+the reading — the per-tag prompt decides how to interpret the same numbers (for
+`steady`, time above the Z2 ceiling is expected, not a failure). (NB: don't
+mistake this for "Z2-only" — many trained-base runs technically straddle Z2/Z3
+by Garmin's auto-zones; the framework here is general aerobic-running.)
 
 Layout follows the LongRunBuilder template (per-activity / per-lap / per-lap
 internal / per-km / structure-agnostic drift) so cross-builder data shape is
@@ -44,7 +46,7 @@ class AerobicBuilder(ReviewBuilder):
     name = "AerobicBuilder"
 
     def applies_to(self, tag: str, activity_type_key: str) -> bool:
-        return tag in ("aerobic_recovery", "aerobic_base")
+        return tag in ("aerobic", "steady")
 
     def build(self, activity_id: int, conn: sqlite3.Connection) -> BuildResult:
         baseline = DefaultBuilder().build(activity_id, conn).context_md
@@ -280,11 +282,13 @@ class AerobicBuilder(ReviewBuilder):
                        f"{longest_start_sec%60}s "
                        "(spans laps — this is a continuous physiological signal, "
                        "not a structural one)")
-        out.append("- _Reference thresholds (coach consensus)_: <5% fully in Z2 / "
-                   "5-20% mild overshoot / >20% heavy overshoot. For "
-                   "**aerobic_recovery** apply a stricter standard (>5% is "
-                   "already a problem); for **aerobic_base** an early-X-min "
-                   "surge is more acceptable than persistent high-HR drift.")
+        out.append("- _Reference numbers only — intent decides the verdict, set "
+                   "by the per-tag prompt_: <5% time above the Z2 ceiling = fully "
+                   "in Z2 / 5-20% = mild overshoot / >20% = heavy overshoot. "
+                   "(For an easy/aerobic run, sustained breach is a discipline "
+                   "miss. For a steady/cruise run, time above the ceiling is "
+                   "expected by design — there a LOW breach % is the warning sign "
+                   "that the run sagged into easy.)")
         return out
 
     @staticmethod

@@ -777,7 +777,7 @@ def build_coaching_context(detailed: dict, longterm: dict | None = None,
             tag = (tags.get(aid_str) or "").strip()
             cmt = (comments.get(aid_str) or "").strip()
             if tag:
-                # tag is a stable key (e.g. 'aerobic_base') after P2 migration #8;
+                # tag is a stable key (e.g. 'aerobic') after P2 migration #8;
                 # render the locale-appropriate label for the LLM context.
                 tag_label = i18n.t(f"tag.{tag}") if tag else ""
                 lines.append(i18n.t("coach_ctx.user_tag", label=tag_label))

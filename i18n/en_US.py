@@ -345,8 +345,8 @@ STRINGS: dict[str, str] = {
 
     # ── Activity tag taxonomy (P2). Keys mirror user_config.ACTIVITY_TAG_KEYS.
     "tag.empty":              "— Untagged —",
-    "tag.aerobic_recovery":   "Aerobic Recovery",
-    "tag.aerobic_base":       "Aerobic Base",
+    "tag.aerobic":            "Aerobic",
+    "tag.steady":             "Steady",
     "tag.long_run":           "Long Run",
     "tag.tempo":              "Tempo",
     "tag.threshold":          "Threshold",

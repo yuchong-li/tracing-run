@@ -132,8 +132,8 @@ _TAG_TIER_AMBER = "bg-amber-900/50 text-amber-200"
 _TAG_TIER_RED   = "bg-red-900/50 text-red-200"
 _TAG_TIER_GRAY  = "bg-gray-700/50 text-gray-300"
 _TAG_COLOR: dict[str, str] = {
-    "aerobic_recovery": _TAG_TIER_BLUE,
-    "aerobic_base":     _TAG_TIER_BLUE,
+    "aerobic":          _TAG_TIER_BLUE,
+    "steady":           _TAG_TIER_AMBER,   # between easy (blue) and tempo (amber/red)
     "long_run":         _TAG_TIER_RED,
     "tempo":            _TAG_TIER_AMBER,
     "threshold":        _TAG_TIER_AMBER,
