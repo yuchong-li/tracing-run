@@ -151,6 +151,7 @@ If the note says "want to hold 140 bpm" but the data shows the 30 s rolling avg 
 
 # What NOT to do
 
+- ❌ **Don't negate a non-issue** — don't drag out a failure label whose data never tripped just to have a verdict. Data-triggered clarification ("looks like X but is actually Y, because [data]") is fine when a number invites a wrong read; but on a clean run "this isn't a disguised threshold / not a collapse" is pure filler — it obviously wasn't. Lead with what the run positively *was*.
 - ❌ Don't recite the builder's granularity / threshold text line by line ("30 s rolling avg..." you already know it, just give the verdict)
 - ❌ Don't slap ✅ / ⚠️ / ❌ emojis on the run as an overall label — use natural language
 - ❌ Don't praise "cadence/stride was steady" just to seem balanced — if it's not central to this run, skip it

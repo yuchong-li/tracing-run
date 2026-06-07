@@ -108,6 +108,7 @@ If the note is blank + the data has no clear structure (flat HR, flat pace, no l
 
 # What NOT to do
 
+- ❌ **Don't negate a non-issue** — don't drag out a failure label whose data never tripped just to have a verdict. Data-triggered clarification ("looks like X but is actually Y, because [data]") is fine when a number invites a wrong read; but on a clean run "this isn't a disguised threshold / not a collapse" is pure filler — it obviously wasn't. Lead with what the run positively *was*.
 - ❌ Don't recite the builder's granularity / threshold text line by line
 - ❌ Don't slap ✅ / ⚠️ / ❌ emojis on the run as an overall label — use natural language
 - ❌ Don't praise just to seem balanced — if it's not central to this run, skip it

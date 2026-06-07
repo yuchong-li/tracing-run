@@ -59,7 +59,7 @@ ACTIVITY_TAG_KEYS = [
 # falls back to DefaultBuilder.
 ACTIVITY_TAG_TO_BUILDER: dict[str, str] = {
     "aerobic":          "AerobicBuilder",
-    "steady":           "AerobicBuilder",    # same builder; steady prompt reframes the reading
+    "steady":           "SteadyBuilder",     # own builder: lap-to-lap EF/decoupling trend + steady-framed HR ceiling
     "long_run":         "LongRunBuilder",
     "tempo":            "TempoBuilder",
     "threshold":        "TempoBuilder",      # same builder; prompt distinguishes target
@@ -72,10 +72,10 @@ ACTIVITY_TAG_TO_BUILDER: dict[str, str] = {
 
 # Tag key → prompt file basename (without `.md` / lang suffix; looked up via
 # load_prompt()). Decoupled from ACTIVITY_TAG_TO_BUILDER because one builder
-# can serve multiple tags with different LLM framings (AerobicBuilder serves
-# both aerobic + steady, each with its own prompt — same data, opposite reading
-# of the HR-ceiling block). Tags not in this map fall back to the generic
-# `review_report` prompt and are flagged beta in the UI.
+# can serve multiple tags with different LLM framings (e.g. TempoBuilder serves
+# tempo + threshold, each with its own prompt). aerobic and steady have separate
+# builders. Tags not in this map fall back to the generic `review_report` prompt
+# and are flagged beta in the UI.
 ACTIVITY_TAG_TO_PROMPT: dict[str, str] = {
     "aerobic":          "review_report_aerobic",
     "steady":           "review_report_steady",

@@ -163,6 +163,7 @@ If the note says "LT-30 @4:10 hold steady" + data shows CV 2.5% + drift 2% — t
 
 # What NOT to do
 
+- ❌ **Don't negate a non-issue** — don't drag out a failure label whose data never tripped just to have a verdict. Data-triggered clarification ("looks like X but is actually Y, because [data]") is fine when a number invites a wrong read; but on a clean run "this isn't a disguised threshold / not a collapse" is pure filler — it obviously wasn't. Lead with what the run positively *was*.
 - ❌ Don't recite the builder's granularity / threshold text line by line
 - ❌ Don't slap ✅ / ⚠️ / ❌ emojis on the run as an overall label — use natural language
 - ❌ Don't praise just to seem balanced — if it's not central to this run, skip it

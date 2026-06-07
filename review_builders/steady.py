@@ -1,34 +1,29 @@
-"""AerobicBuilder — for the `aerobic` tag (merged former recovery + base).
+"""SteadyBuilder — for the `steady` tag (High-Z2 → mid/high-Z3 cruise).
 
-Aerobic-running activities: low-Z2 recovery through high-Z2 / low-Z3 base
-accumulation. The central discipline question is "did the run stay aerobic
-(at/under the Z2 ceiling)?" — going too fast is the dominant failure mode.
-(NB: don't mistake this for "Z2-only" — many trained-base runs technically
-straddle Z2/Z3 by Garmin's auto-zones; the framework here is general
-aerobic-running.) The `steady` cruise tag has its OWN builder (SteadyBuilder)
-because it reads the same Z2 ceiling inversely (above it is expected, not a
-fault).
+Standalone builder (does NOT subclass AerobicBuilder) so steady's analysis can
+diverge freely from aerobic's over time. It shares the common `primitives`
+toolkit + the DefaultBuilder baseline (the standard metadata every report
+shows), then adds steady-specific deep analysis.
 
-Layout follows the LongRunBuilder template (per-activity / per-lap / per-lap
-internal / per-km / structure-agnostic drift) so cross-builder data shape is
-uniform. ON TOP of that, AerobicBuilder keeps the aerobic-specific
-**HR ceiling observation** section — for aerobic running, "did the run stay
-in Z2?" is the primary discipline question, more central than cardiac drift.
+Why steady gets its own builder instead of reusing AerobicBuilder:
 
-Coaching philosophy (from plan):
-- Most common error in aerobic running is going too fast → builder
-  must surface HR ceiling breaches clearly (HR ceiling = Garmin's
-  Zone 2/3 boundary, looked up from activity_hr_zones at runtime).
-- Aerobic decoupling is THE base-fitness indicator. < 5% drift = base solid.
-  Pace flat + HR > 10% rise = aerobic insufficient OR dehydration / under-recovery.
-- Vertical ratio reveals form efficiency. People get sloppy on easy runs;
-  bouncy form increases joint load. Cross-reference with tempo vertical
-  ratio ideally.
-- Cadence is the pre-failure signal: when fatigued runners let cadence
-  drop and lengthen stride to hold pace, that's the early warning.
+- **Inverted HR-ceiling reading.** For an easy/aerobic run, time above the Z2
+  ceiling is a discipline miss. For steady it is EXPECTED — the run is supposed
+  to sit above it. So the ceiling block is framed as "did the run genuinely
+  reach the cruise band?" (a LOW breach % is the warning = sagged into easy),
+  not "did you stay in Z2?".
+- **Lap-to-lap decoupling trend.** Steady's #1 sustainability signal is whether
+  the HR cost rises lap-to-lap (efficiency factor dropping across laps), even
+  when each lap is internally smooth — a number AerobicBuilder never
+  precomputed. This builder emits per-lap EF + the lap-1-relative EF drift so
+  the coach reads the trend directly instead of approximating it.
 
-Output language: context_md is emitted in **neutral English**. The LLM's
-response language is steered by the per-tag prompt (P5), not the builder.
+Steadiness is read on two independent axes the builder keeps separate:
+  - within-lap   → per-lap internal pace CV  (`### Per-lap internal readings`)
+  - between-lap  → per-lap pace drift + EF trend  (`### Lap-to-lap …`)
+
+context_md is emitted in neutral English; the per-tag prompt steers the
+coach's response language.
 """
 
 import sqlite3
@@ -43,24 +38,24 @@ from review_builders.primitives import (
 )
 
 
-class AerobicBuilder(ReviewBuilder):
-    name = "AerobicBuilder"
+class SteadyBuilder(ReviewBuilder):
+    name = "SteadyBuilder"
 
     def applies_to(self, tag: str, activity_type_key: str) -> bool:
-        return tag == "aerobic"
+        return tag == "steady"
 
     def build(self, activity_id: int, conn: sqlite3.Connection) -> BuildResult:
         baseline = DefaultBuilder().build(activity_id, conn).context_md
-        deep     = self._aerobic_analysis(activity_id, conn)
+        deep     = self._steady_analysis(activity_id, conn)
         return BuildResult(
             context_md       = baseline + (("\n\n" + deep) if deep else ""),
             highlight_windows= [],
             builder_hash     = self.builder_hash(),
         )
 
-    # ── Aerobic deep analysis ────────────────────────────────────────────
+    # ── Steady deep analysis ─────────────────────────────────────────────
 
-    def _aerobic_analysis(self, aid: int, conn: sqlite3.Connection) -> str:
+    def _steady_analysis(self, aid: int, conn: sqlite3.Connection) -> str:
         # Pull rows in primitives' canonical column order + distance_cum_m
         # at idx 7 (needed by slice_by_km).
         rows = conn.execute("""
@@ -73,14 +68,15 @@ class AerobicBuilder(ReviewBuilder):
         if len(rows) < 60:
             return ""
 
-        # Detect native sample interval (1s for fresh fetch, ~10s for legacy backfill)
+        # Detect native sample interval (1s fresh fetch, ~10s legacy backfill)
         if len(rows) >= 3:
             deltas = sorted(rows[i+1][0] - rows[i][0] for i in range(len(rows) - 1))
             median_delta = max(1, deltas[len(deltas) // 2])
         else:
             median_delta = 1
 
-        # Z3 ceiling (= Z2/Z3 boundary) — aerobic's central indicator
+        # Z3 ceiling (= Z2/Z3 boundary). For steady this is the floor of the
+        # cruise band — confirms the run reached the band, not a discipline cap.
         z3_row = conn.execute("""
             SELECT zone_low_boundary FROM activity_hr_zones
              WHERE activity_id = ? AND zone_number = 3
@@ -90,14 +86,17 @@ class AerobicBuilder(ReviewBuilder):
         lap_windows = lap_windows_from_db(conn, aid)
 
         out = [
-            "## 🎯 Aerobic-specific analysis",
+            "## 🎯 Steady-specific analysis",
             "",
             "_Data + derived signals + coach-consensus reference thresholds. "
             "Verdict is yours (LLM) to synthesize from the activity tag, user "
-            "notes, personal_note, and long-term memory — do not re-quote "
-            "these numbers verbatim. The central indicator for aerobic running "
-            "is **HR ceiling observation** (discipline); the other sections "
-            "(Pa:HR / mechanics / drift) are supporting._",
+            "notes, personal_note, and long-term memory — do not re-quote these "
+            "numbers verbatim. For a STEADY / cruise run the central reads are: "
+            "**sustainability** (Pa:HR decoupling + the lap-to-lap EF trend) and "
+            "**steadiness** on two axes (within-lap pace CV + lap-to-lap pace "
+            "drift). The HR-ceiling block CONFIRMS the run reached the cruise "
+            "band — time above the Z2 ceiling is expected for steady, a LOW "
+            "breach % is the warning, not a high one._",
         ]
 
         # ── (1) Per-activity overview ────────────────────────────────────
@@ -108,24 +107,26 @@ class AerobicBuilder(ReviewBuilder):
         # ── (2) Lap structure detection ─────────────────────────────────
         out += self._lap_structure_section(lap_windows)
 
-        # ── (3) HR ceiling observation (aerobic-specific, priority indicator) ─
+        # ── (3) HR ceiling observation (steady framing) ──────────────────
         if z3_ceiling is not None:
             out += self._hr_ceiling_section(rows, z3_ceiling, median_delta, lap_windows)
 
-        # ── (4) Per-lap slice + per-lap internal readings ────────────────
+        # ── (4) Per-lap slice + within-lap internal readings ─────────────
         if lap_windows:
             out += self._per_lap_section(rows, lap_windows)
             out += self._per_lap_internal_section(rows, lap_windows)
+            # ── (5) Between-lap stability + decoupling trend (steady-specific)
+            out += self._lap_to_lap_section(rows, lap_windows)
 
-        # ── (5) Per-km slice ─────────────────────────────────────────────
+        # ── (6) Per-km slice ─────────────────────────────────────────────
         km_buckets = slice_by_km(rows)
         if km_buckets:
             out += self._per_km_section(km_buckets)
 
-        # ── (6) Structure-agnostic drift readings ────────────────────────
+        # ── (7) Structure-agnostic drift readings ────────────────────────
         out += self._drift_section(rows, lap_windows, km_buckets)
 
-        # ── (7) Tool usage hint ──────────────────────────────────────────
+        # ── (8) Tool usage hint ──────────────────────────────────────────
         out += self._tool_hint_section()
 
         return "\n".join(out)
@@ -154,7 +155,7 @@ class AerobicBuilder(ReviewBuilder):
         if mech_parts:
             out.append(f"- Mechanics avg: {' | '.join(mech_parts)}")
 
-        # Lap-level pace CV — structure hint (steady vs pickup)
+        # Lap-level pace CV — first cut at the between-lap steadiness axis
         if lap_windows and len(lap_windows) >= 2:
             lap_paces = []
             for w in lap_windows:
@@ -171,9 +172,11 @@ class AerobicBuilder(ReviewBuilder):
                            f"{cv*100:.1f}% | "
                            f"fastest {fmt_pace(fastest)} → slowest {fmt_pace(slowest)} "
                            f"(spread {spread:.0f}s/km)")
-                out.append(f"  _Interpretation hint (aerobic lens)_: low CV + "
-                           f"small spread = steady-state; markedly faster final "
-                           f"laps = likely end-of-run pickup.")
+                out.append("  _Interpretation hint (steady lens)_: low CV + small "
+                           "spread = a controlled cruise (between-lap stable); a "
+                           "wide spread or laps stepping monotonically = either a "
+                           "progression or drifting up — disambiguate in the "
+                           "lap-to-lap section + the user's notes.")
         return out
 
     @staticmethod
@@ -198,11 +201,12 @@ class AerobicBuilder(ReviewBuilder):
         if is_manual:
             out.append(f"- {len(distances)} laps, non-final laps average "
                        f"{avg_lap_km:.1f}km → **likely manual laps**")
-            out.append("- _Reading priority_: manual laps usually correspond "
-                       "to subjective markers (warmup / main set / cooldown / "
-                       "pace-zone switches / a final pickup pressed as its own "
-                       "lap, etc.). If the user notes describe these markers, "
-                       "tie the lap data to the story in the notes.")
+            out.append("- _Reading priority (steady)_: manual laps are the user's "
+                       "own segmentation. The press points are informative — in a "
+                       "cruise, pressing lap mid-run usually means \"felt I could "
+                       "lift a gear\" or \"this was too hot, backed off\". Whether "
+                       "the body (HR / EF) supported that adjustment is direct "
+                       "calibration data — tie it to the notes.")
         else:
             out.append(f"- {len(distances)} laps, distances near integer km "
                        f"→ likely Garmin auto-1km laps")
@@ -213,10 +217,10 @@ class AerobicBuilder(ReviewBuilder):
     @staticmethod
     def _hr_ceiling_section(rows: list, z3_ceiling: float, median_delta: int,
                              lap_windows: list[dict]) -> list[str]:
-        """Aerobic-specific: 30s rolling HR vs Z2 ceiling.
-        THE central discipline indicator for aerobic. 30s rolling spans
-        across lap boundaries on purpose — HR ceiling is a continuous
-        physiological metric, not a structural one."""
+        """30s rolling HR vs the Z2 ceiling. For steady this CONFIRMS the run
+        reached the cruise band (above the ceiling is expected); a LOW breach
+        % is the warning (sagged into easy). The 30s window spans lap
+        boundaries on purpose — it's a continuous physiological signal."""
         window_n = max(1, 30 // median_delta)
         hr_rows = [(r[0], r[1]) for r in rows if r[1] is not None]
         if len(hr_rows) < window_n:
@@ -254,12 +258,13 @@ class AerobicBuilder(ReviewBuilder):
             f"### HR ceiling observation (30s rolling avg vs Z2 ceiling "
             f"{z3_ceiling} bpm, = the start of Z3 in this user's Garmin zones)"
         ]
-        out.append(f"- Overall breach: {breaches} / {total} 30s windows ({pct_total:.0f}%)")
+        out.append(f"- Time above the Z2 ceiling (in/above the cruise band): "
+                   f"{breaches} / {total} 30s windows ({pct_total:.0f}%)")
 
         # Per-lap or halves breakdown
         if lap_windows and len(lap_windows) >= 2 \
                 and is_manual_lap_structure([w['dist_m'] for w in lap_windows if w['dist_m']]):
-            out.append("- Per-lap breach:")
+            out.append("- Per-lap time above ceiling:")
             for w in lap_windows:
                 in_lap = [b for sec, b in breach_flags
                           if w['start_sec'] <= sec < w['end_sec']]
@@ -274,21 +279,26 @@ class AerobicBuilder(ReviewBuilder):
             mid = total // 2
             front_pct = 100 * sum(1 for _, b in breach_flags[:mid] if b) / max(1, mid)
             back_pct  = 100 * sum(1 for _, b in breach_flags[mid:] if b) / max(1, total - mid)
-            out.append(f"- First-half breach: {front_pct:.0f}% | "
-                       f"Second-half breach: {back_pct:.0f}%")
+            out.append(f"- First-half: {front_pct:.0f}% | "
+                       f"Second-half: {back_pct:.0f}% above ceiling")
 
         if longest_n > 0:
-            out.append(f"- Longest continuous breach: {longest_dur_s/60:.1f} min, "
+            out.append(f"- Longest continuous stretch above ceiling: "
+                       f"{longest_dur_s/60:.1f} min, "
                        f"starting at {longest_start_sec//60}min "
-                       f"{longest_start_sec%60}s "
-                       "(spans laps — this is a continuous physiological signal, "
-                       "not a structural one)")
-        out.append("- _Reference thresholds (coach consensus)_: <5% time above "
-                   "the Z2 ceiling = fully in Z2 / 5-20% = mild overshoot / "
-                   ">20% = heavy overshoot. For an aerobic/easy run, sustained "
-                   "breach = going too fast (the dominant aerobic failure mode); "
-                   "an early-minutes surge is more forgivable than persistent "
-                   "high-HR drift.")
+                       f"{longest_start_sec%60}s")
+
+        out.append("- _Reading for STEADY (reference anchors — recalibrate to "
+                   "your own data over time)_: time above the ceiling is EXPECTED "
+                   "for a cruise. **>70%** = genuinely in the cruise band; "
+                   "**40–70%** = partial (slow warmup or a sagging back half — "
+                   "check the per-km HR progression for which); **<40%** = the "
+                   "run sagged into easy and missed the steady stimulus. The "
+                   "warning sign for steady is a LOW breach %, not a high one.")
+        out.append("- _What this number CAN'T answer (the upper bound)_: did HR "
+                   "stay inside the steady band (~mid–high Z3) or climb past it "
+                   "into tempo/threshold? Judge that from the lap-to-lap EF trend "
+                   "+ Pa:HR decoupling + HR-time drift, not from this %.")
         return out
 
     @staticmethod
@@ -296,8 +306,7 @@ class AerobicBuilder(ReviewBuilder):
         distances = [w['dist_m'] for w in lap_windows if w['dist_m']]
         is_manual = is_manual_lap_structure(distances)
         kind_label = ("**likely manual laps**" if is_manual
-                      else "likely Garmin auto laps (km/mile)")
-
+                      else "likely auto-1km laps")
         out = ["", f"### Per-lap breakdown ({len(lap_windows)} laps, {kind_label})"]
         out.append("| Lap | sec | min | distance | pace | HR | cadence | GCT | vertical ratio | stride |")
         out.append("|---|---|---|---|---|---|---|---|---|---|")
@@ -324,13 +333,14 @@ class AerobicBuilder(ReviewBuilder):
 
     @staticmethod
     def _per_lap_internal_section(rows: list, lap_windows: list[dict]) -> list[str]:
-        """Per-lap internal: pace CV, HR drift slope/R², first-half vs
-        second-half stats. Loops ALL laps (long_run convention)."""
+        """Within-lap steadiness axis: per-lap pace CV, HR drift slope/R²,
+        first-half vs second-half stats. Loops ALL laps."""
         out = ["", "### Per-lap internal readings (within-lap stability + drift)"]
-        out.append("_Loops all laps; computes within-lap pace CV, HR drift "
-                   "slope, and first-half vs second-half stats. Some "
-                   "sub-readings may be None for short laps (insufficient "
-                   "data) — that's normal._")
+        out.append("_The WITHIN-lap steadiness axis: pace CV (is each lap "
+                   "internally smooth or surge-and-ease?), within-lap HR drift, "
+                   "first-half vs second-half. Read alongside the Lap-to-lap "
+                   "section, which is the BETWEEN-lap axis. Some sub-readings may "
+                   "be None for short laps — that's normal._")
         out.append("")
         for w in lap_windows:
             seg_rows = [r for r in rows if w['start_sec'] <= r[0] < w['end_sec']]
@@ -375,8 +385,76 @@ class AerobicBuilder(ReviewBuilder):
         return out
 
     @staticmethod
+    def _lap_to_lap_section(rows: list, lap_windows: list[dict]) -> list[str]:
+        """Between-lap steadiness + decoupling trend — steady's sustainability
+        signal. Per-lap EF (efficiency factor = speed/HR) and its drift vs
+        lap 1: EF dropping lap-to-lap = HR cost rising = decoupling across the
+        run, even when each lap is internally smooth. This is the lap-to-lap
+        trend the whole-run Pa:HR (single first/second-half number) can't show."""
+        if not lap_windows or len(lap_windows) < 2:
+            return []
+        per_lap = []
+        for w in lap_windows:
+            seg = [r for r in rows if w['start_sec'] <= r[0] < w['end_sec']]
+            s = seg_stats(seg)
+            if s:
+                per_lap.append((w, s))
+        if len(per_lap) < 2:
+            return []
+
+        out = ["", "### Lap-to-lap stability & decoupling trend "
+                   "(BETWEEN-lap axis — steady's sustainability signal)"]
+        out.append("| Lap | pace | HR | EF (m/s per bpm) | EF drift vs lap1 |")
+        out.append("|---|---|---|---|---|")
+        ef1 = per_lap[0][1]['ef']
+        paces = []
+        for w, s in per_lap:
+            ef = s['ef']
+            drift = (ef1 - ef) / ef1 * 100 if ef1 else 0.0
+            paces.append(s['pace_s_per_km'])
+            out.append("| " + " | ".join([
+                f"{w['lap_id']}",
+                fmt_pace_compact(s['pace_s_per_km']),
+                f"{s['hr_avg']:.0f}",
+                f"{ef:.4f}",
+                f"{drift:+.1f}%",
+            ]) + " |")
+
+        # Pace step direction (lap1 → last)
+        pace_delta = paces[-1] - paces[0]   # s/km; negative = faster
+        if pace_delta <= -5:
+            direction = (f"stepping FASTER ({fmt_pace_compact(paces[0])} → "
+                         f"{fmt_pace_compact(paces[-1])}, {pace_delta:+.0f}s/km)")
+        elif pace_delta >= 5:
+            direction = (f"stepping SLOWER ({fmt_pace_compact(paces[0])} → "
+                         f"{fmt_pace_compact(paces[-1])}, +{pace_delta:.0f}s/km)")
+        else:
+            direction = (f"flat ({fmt_pace_compact(paces[0])} → "
+                         f"{fmt_pace_compact(paces[-1])}, {pace_delta:+.0f}s/km)")
+        out.append(f"- Pace step direction (lap1 → last): {direction}")
+
+        ef_last_drift = (ef1 - per_lap[-1][1]['ef']) / ef1 * 100 if ef1 else 0.0
+        out.append(f"- EF drift lap1 → last: {ef_last_drift:+.1f}% "
+                   "(positive = efficiency dropping = HR cost rising lap-to-lap "
+                   "= decoupling across the run)")
+        out.append("- _Reading for STEADY (rough anchors — recalibrate over "
+                   "time)_: pace flat + EF drift small (~<3%) = held a real "
+                   "steady state; pace stepping faster + EF dropping = drifting "
+                   "toward tempo (or a planned progression — check the notes); "
+                   "EF dropping while pace holds or sags = cost rising at/over "
+                   "today's ceiling.")
+        out.append("- _Caveat_: EF compared across laps in different pace zones "
+                   "isn't pure cardiac drift — always read the EF column "
+                   "alongside the pace column (a planned progression naturally "
+                   "shifts EF).")
+        return out
+
+    @staticmethod
     def _per_km_section(km_buckets: list[dict]) -> list[str]:
         out = ["", f"### Per-km breakdown ({len(km_buckets)} km)"]
+        out.append("_For single-lap runs this IS the between-lap axis: read the "
+                   "per-km pace column for monotonic drift (stepping up/down) vs "
+                   "flat._")
         out.append("| km | sec | pace | HR | cadence | GCT | vertical ratio | stride |")
         out.append("|---|---|---|---|---|---|---|---|")
         for b in km_buckets:
@@ -404,11 +482,10 @@ class AerobicBuilder(ReviewBuilder):
         if hrd:
             out.append(f"- **Full-activity HR drift** (linear regression on time): "
                        f"{hrd['slope_per_min']:+.2f} bpm/min, R²={hrd['r_squared']:.2f} "
-                       f"_(high R² = stable linear drift; low R² = HR is "
-                       f"dominated by lap structure / end-of-run pickup, not "
-                       f"pure cardiac drift)_")
+                       f"_(high R² = stable linear drift; low R² = HR is dominated "
+                       f"by pace changes / lap structure, not pure cardiac drift)_")
             out.append("- _Reference thresholds (coach consensus)_: "
-                       "<+0.15 bpm/min = true steady-state aerobic; "
+                       "<+0.15 bpm/min = true steady-state; "
                        "+0.15-0.4 = mild cardiac drift; >+0.4 = significant drift.")
 
         pa = pa_hr_split(rows)
@@ -418,11 +495,14 @@ class AerobicBuilder(ReviewBuilder):
                        f"{pa['decoupling_pct']:+.1f}% "
                        f"(first half HR {pa['first_half_hr']:.0f} @ {fmt_pace(pa['first_half_pace'])} → "
                        f"second half HR {pa['second_half_hr']:.0f} @ {fmt_pace(pa['second_half_pace'])})")
-            out.append("- _Reference thresholds (coach consensus)_: <5% good / "
-                       "5-10% slight decoupling / >10% significant decoupling. "
-                       "**Special pattern**: HR up >10% but pace barely changes "
-                       "→ typically points to dehydration / under-recovery / "
-                       "weak aerobic base.")
+            out.append("- _Reference thresholds for STEADY (coach consensus)_: "
+                       "<5% = genuinely sustainable cruise / 5-8% = borderline, "
+                       "at the edge of sustainable for this duration / >8% = "
+                       "functionally a threshold, the body couldn't hold the "
+                       "cruise at constant cost. **Special pattern**: HR up >10% "
+                       "but pace barely changes → dehydration / under-recovery. "
+                       "_(This is the whole-run halves split; the Lap-to-lap "
+                       "section shows the finer lap-by-lap trend.)_")
 
         # First km vs last km
         if len(km_buckets) >= 2:
@@ -463,8 +543,9 @@ class AerobicBuilder(ReviewBuilder):
                     parts.append(f"pace {d['pace_delta_s']:+.0f}s/km ({d['pace_delta_pct']:+.1f}%)")
                 if parts:
                     out.append("- **First lap vs last lap**: " + " | ".join(parts) +
-                               " _(caveat: laps may live in different pace "
-                               "zones; do not treat this directly as cardiac drift)_")
+                               " _(caveat: laps may live in different pace zones; "
+                               "read with the Lap-to-lap EF column, not as pure "
+                               "cardiac drift)_")
         return out
 
     @staticmethod
@@ -472,14 +553,16 @@ class AerobicBuilder(ReviewBuilder):
         return [
             "",
             "### Tool availability",
-            "- For aggregates over an arbitrary custom window (e.g. \"stats "
-            "for the final 5-min pickup segment\", or a segment redefined by "
-            "the user's notes), call "
-            "`get_window_stats(start, end, key_type, channels?)`.",
-            "- For raw 1Hz rows over an arbitrary window (e.g. to verify "
-            "whether a 30s window actually breached the ceiling), call "
-            "`get_raw_window_by_time` / `get_raw_window_by_distance` "
-            "(existing tools).",
-            "- By default, prefer the per-lap / per-km slices the builder "
-            "provides; only call a tool when the slice granularity is insufficient.",
+            "- For aggregates over an arbitrary custom window (e.g. a segment "
+            "redefined by the user's notes, or one lap on its own), call "
+            "`get_window_stats(start, end, key_type, channels?)`. It returns "
+            "HR/pace stats, mechanics, an `ef` (efficiency factor) for the "
+            "window, and the within-window HR-drift slope — note it does NOT "
+            "return a decoupling % or a pace CV directly (use the `ef` across "
+            "two windows, or the precomputed per-lap sections above).",
+            "- For raw 1Hz rows over an arbitrary window, call "
+            "`get_raw_window_by_time` / `get_raw_window_by_distance`.",
+            "- By default, prefer the per-lap / per-km / lap-to-lap slices the "
+            "builder already provides; only call a tool when the slice "
+            "granularity is insufficient.",
         ]

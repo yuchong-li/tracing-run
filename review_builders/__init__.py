@@ -17,6 +17,7 @@ Public API:
 from review_builders.base      import BuildResult, ReviewBuilder
 from review_builders.default   import DefaultBuilder
 from review_builders.aerobic   import AerobicBuilder
+from review_builders.steady    import SteadyBuilder
 from review_builders.long_run  import LongRunBuilder
 from review_builders.tempo     import TempoBuilder
 from review_builders.intervals import IntervalBuilder
@@ -27,7 +28,7 @@ from review_builders.hill      import HillBuilder
 import user_config as uc
 
 __all__ = ["dispatch", "is_beta", "BuildResult", "ReviewBuilder",
-           "DefaultBuilder", "AerobicBuilder", "LongRunBuilder",
+           "DefaultBuilder", "AerobicBuilder", "SteadyBuilder", "LongRunBuilder",
            "TempoBuilder", "IntervalBuilder", "RaceBuilder", "TrailBuilder",
            "HillBuilder"]
 
@@ -36,7 +37,8 @@ __all__ = ["dispatch", "is_beta", "BuildResult", "ReviewBuilder",
 # is_beta() flags them with a "(beta)" suffix in the UI.
 _BUILDER_REGISTRY: dict[str, type[ReviewBuilder]] = {
     "DefaultBuilder":  DefaultBuilder,
-    "AerobicBuilder":  AerobicBuilder,    # aerobic + steady
+    "AerobicBuilder":  AerobicBuilder,    # aerobic
+    "SteadyBuilder":   SteadyBuilder,     # steady (own builder: lap-to-lap EF trend + steady-framed ceiling)
     "LongRunBuilder":  LongRunBuilder,    # long_run
     "TempoBuilder":    TempoBuilder,      # tempo + threshold
     "IntervalBuilder": IntervalBuilder,   # intervals
