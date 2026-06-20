@@ -23,8 +23,7 @@ active locale is taken from `i18n.current_locale()` unless overridden.
 | `personal_note_refine.md` | system | one-shot refinement of the user's personal note |
 | `review_report.md` | user | per-activity review for the untagged / fallback case |
 | `review_report_aerobic.md` | user | typed-builder review prompt for the Aerobic tag (merged recovery+base) |
-| `review_report_steady.md` | user | …Steady (High-Z2→mid/high-Z3 cruise; reuses AerobicBuilder, reframed reading) |
-| `review_report_aerobic_recovery.md` | user | orphaned after the aerobic merge — no tag maps here; kept for now |
+| `review_report_steady.md` | user | …Steady (High-Z2→mid/high-Z3 cruise; own `SteadyBuilder` — inverted HR-ceiling read + lap-to-lap EF/decoupling trend) |
 | `review_report_tempo.md` | user | …Tempo |
 | `review_report_threshold.md` | user | …Threshold |
 | `review_report_intervals.md` | user | …Intervals |

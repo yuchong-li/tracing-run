@@ -90,14 +90,14 @@ If you open an issue for one of these, I'll close it pointing here. Not because 
 
 Two pieces of input from you decide how the rest of the pipeline behaves:
 
-- **Workout-type tag** — picks the typed builder (Long Run / Tempo / Intervals / Hill / Trail / Race / Aerobic) and the matching prompt. An untagged activity falls through to a generic builder.
+- **Workout-type tag** — picks the typed builder (Long Run / Tempo / Threshold / Intervals / Hill / Trail / Race / Aerobic / Steady) and the matching prompt. An untagged activity falls through to a generic builder.
 - **Activity comment** — your plan, intent, or felt experience (e.g. *"4×1km @ 4:00, rest 90s"* or *"hamstrings tightened up at hour 3"*). The builder aligns laps against your stated plan, and the LLM treats your words as ground truth whenever they contradict Garmin's auto-classification.
 
 Skip them and you get generic numbers. Spend ten seconds tagging + commenting and the report tells you *which rep you cracked on and why*. The whole app rests on one assumption: **you know more about the run than the watch does** — your job is to tell it, its job is to do the math.
 
 ### 🔬 Per-activity review
 
-Click any run in the sidebar. The app fetches the activity's full 1-Hz time-series (HR, pace, cadence, ground-contact-time, vertical oscillation, power, GPS, …), routes it through a **type-specific builder** (Long Run / Tempo / Intervals / Hill / Trail / Race / Aerobic), and produces a markdown report using a prompt tailored to that workout type.
+Click any run in the sidebar. The app fetches the activity's full 1-Hz time-series (HR, pace, cadence, ground-contact-time, vertical oscillation, power, GPS, …), routes it through a **type-specific builder** (Long Run / Tempo / Threshold / Intervals / Hill / Trail / Race / Aerobic / Steady), and produces a markdown report using a prompt tailored to that workout type.
 
 The report itself is the first assistant message in a chat thread; follow-up questions continue in the same thread. The LLM has three drill-down tools scoped to this activity:
 
@@ -194,6 +194,7 @@ The same activity (say, a 25 km long run) means different things in different co
 | Trail                | `TrailBuilder`     | power × elevation overlay, downhill cadence          |
 | Race                 | `RaceBuilder`      | distance-aware (5K / 10K / half / full sub-profiles) |
 | Aerobic              | `AerobicBuilder`   | HR-ceiling breach, decoupling, form efficiency       |
+| Steady               | `SteadyBuilder`    | lap-to-lap EF trend, inverted (steady-framed) HR-ceiling read |
 
 Each builder reads the raw 1-Hz tier from SQLite, computes those metrics, and emits a markdown context block paired with the workout-type-specific prompt.
 
@@ -219,7 +220,7 @@ The matching prompt (`prompts/{en,zh-cn}/review_report_long_run.md`) supplies:
 - **Drill-down tool routing** — which of `get_window_stats` / `get_raw_window_*` to use for which type of follow-up
 - **Formatting rules** — pace not m/s, the user's reference frame, integer HR / cadence / power
 
-The other typed builders (`tempo`, `intervals`, `hill`, `trail`, `race`, `aerobic`) follow the same structure with different metrics — Hill focuses on per-rep power decay + form-failure detection (cadence drop, GCT spike near the summit); Intervals on per-rep consistency + recovery-HR drop; and so on.
+The other typed builders (`tempo`, `intervals`, `hill`, `trail`, `race`, `aerobic`, `steady`) follow the same structure with different metrics — Hill focuses on per-rep power decay + form-failure detection (cadence drop, GCT spike near the summit); Intervals on per-rep consistency + recovery-HR drop; and so on.
 
 ### 💾 Storage
 
@@ -263,7 +264,7 @@ On first launch the app asks for the login password (set during setup), then you
 
 ## Stack
 
-- **UI**: [FastHTML](https://fastht.ml) (single file, htmx, server-side rendering, SSE streams for LLM responses)
+- **UI**: [FastHTML](https://fastht.ml) (htmx, server-side rendering, SSE streams for LLM responses)
 - **Garmin**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect) + [garth](https://github.com/matin/garth) + headless Playwright (for OAuth/MFA handling)
 - **Storage**: SQLite (single file)
 - **LLM**: any OpenAI-compatible endpoint — defaults to a local LiteLLM proxy

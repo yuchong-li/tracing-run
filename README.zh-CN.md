@@ -90,14 +90,14 @@
 
 来自你的两条输入决定了后面整条管线的走向:
 
-- **训练类型 tag** —— 选择 typed builder (Long Run / Tempo / Intervals / Hill / Trail / Race / Aerobic) 及对应的 prompt。未 tag 的活动落入通用 builder。
+- **训练类型 tag** —— 选择 typed builder (Long Run / Tempo / Threshold / Intervals / Hill / Trail / Race / Aerobic / Steady) 及对应的 prompt。未 tag 的活动落入通用 builder。
 - **活动备注** —— 你的课表、意图或主观感受 (例: *"4×1km @ 4:00, 间歇 90s"* 或 *"第 3 小时大腿开始紧"*)。Builder 按你写的课表对齐 lap 数据; 当你写的内容与 Garmin 的自动分类冲突时, LLM 把你的话视为 ground truth。
 
 不填: 拿到一份通用的数字报告。花十秒 tag + 写备注: 报告会告诉你*哪一组掉了链子、为什么*。整个 App 的前提只有一条: **你比手表更懂这次跑** —— 你负责告诉它, 它负责算明白。
 
 ### 🔬 单次复盘
 
-在侧边栏点击任意一次跑步。应用会拉取该次活动完整的 1Hz 时序 (心率 / 配速 / 步频 / 触地时间 / 垂直振幅 / 功率 / GPS 等), 交由**对应训练类型的 builder** (Long Run / Tempo / Intervals / Hill / Trail / Race / Aerobic) 处理, 并以该类型专属的 prompt 生成一份 markdown 复盘报告。
+在侧边栏点击任意一次跑步。应用会拉取该次活动完整的 1Hz 时序 (心率 / 配速 / 步频 / 触地时间 / 垂直振幅 / 功率 / GPS 等), 交由**对应训练类型的 builder** (Long Run / Tempo / Threshold / Intervals / Hill / Trail / Race / Aerobic / Steady) 处理, 并以该类型专属的 prompt 生成一份 markdown 复盘报告。
 
 报告本身就是该聊天线程的首条 assistant 消息。后续追问沿用同一线程。LLM 配备三个针对本次活动的钻取工具:
 
@@ -194,6 +194,7 @@ flowchart TD
 | 越野               | `TrailBuilder`     | 功率 × 海拔 overlay、下坡 cadence                     |
 | 比赛               | `RaceBuilder`      | 距离自适应 (5K / 10K / half / full 子档)              |
 | 有氧               | `AerobicBuilder`   | HR 上限突破、decoupling、形态效率                     |
+| 稳态巡航           | `SteadyBuilder`    | lap-to-lap EF 趋势、steady 语境下反转的 HR 上限读法     |
 
 每个 builder 从 SQLite 读取 1Hz 原始时序, 计算上述指标, 输出一段 markdown context, 搭配该类型专属的 prompt。
 
@@ -219,7 +220,7 @@ flowchart TB
 - **钻取工具路由** —— follow-up 该调 `get_window_stats` 还是 `get_raw_window_*`
 - **格式化规则** —— 配速而非 m/s、保持用户的参考系、HR / 步频 / 功率取整
 
-其余 typed builder (`tempo` / `intervals` / `hill` / `trail` / `race` / `aerobic`) 结构相同、指标不同 —— Hill 关注 per-rep 功率衰减 + 形态崩溃 (接近顶端时 cadence 掉 + GCT 飙升); Intervals 关注 per-rep 一致性 + 间歇 HR 回落; 以此类推。
+其余 typed builder (`tempo` / `intervals` / `hill` / `trail` / `race` / `aerobic` / `steady`) 结构相同、指标不同 —— Hill 关注 per-rep 功率衰减 + 形态崩溃 (接近顶端时 cadence 掉 + GCT 飙升); Intervals 关注 per-rep 一致性 + 间歇 HR 回落; 以此类推。
 
 ### 💾 存储
 
@@ -263,7 +264,7 @@ open http://localhost:8507
 
 ## 技术栈
 
-- **UI**: [FastHTML](https://fastht.ml) (单文件, htmx, 服务端渲染, SSE 流式 LLM 回复)
+- **UI**: [FastHTML](https://fastht.ml) (htmx, 服务端渲染, SSE 流式 LLM 回复)
 - **Garmin**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect) + [garth](https://github.com/matin/garth) + 无头 Playwright (处理 OAuth/MFA)
 - **存储**: SQLite (单文件)
 - **LLM**: 任意 OpenAI 兼容 endpoint, 默认指向本地 LiteLLM proxy
